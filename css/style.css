@@ -1,0 +1,151 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap');
+
+:root{
+  --basalt:#14181C;
+  --slate:#2A3339;
+  --sea:#4C7A73;
+  --fog:#EDEDE6;
+  --amber:#E0A458;
+  --stone:#8B9A96;
+  --radius: 2px;
+}
+
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0;
+  background:var(--basalt);
+  color:var(--fog);
+  font-family:'Work Sans', sans-serif;
+  font-size:16px;
+  line-height:1.55;
+}
+
+h1,h2,h3,.display{
+  font-family:'Fraunces', serif;
+  font-weight:600;
+  letter-spacing:-0.01em;
+  color:var(--fog);
+  margin:0 0 0.4em;
+}
+
+.mono{font-family:'JetBrains Mono', monospace;}
+a{color:var(--amber); text-decoration:none;}
+a:hover{text-decoration:underline;}
+a:focus-visible, button:focus-visible, input:focus-visible{
+  outline:2px solid var(--amber);
+  outline-offset:2px;
+}
+
+/* --- Basalt column motif --- */
+.columns-divider{display:flex; height:14px; width:100%; overflow:hidden;}
+.columns-divider span{
+  flex:1 0 18px; height:100%; background:var(--slate);
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  margin:0 1px; opacity:0.7;
+}
+.columns-divider span:nth-child(3n){background:var(--sea);}
+.columns-divider span:nth-child(5n){background:var(--amber); opacity:0.5;}
+
+/* --- Header / Nav --- */
+header.site-header{
+  position:sticky; top:0; z-index:50;
+  background:rgba(20,24,28,0.92);
+  backdrop-filter:blur(6px);
+  border-bottom:1px solid var(--slate);
+}
+.nav-wrap{
+  max-width:1100px; margin:0 auto;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 24px;
+}
+.brand{
+  font-family:'Fraunces', serif; font-weight:700; font-size:1.15rem;
+  color:var(--fog); display:flex; align-items:center; gap:10px;
+}
+.brand .mark{
+  width:10px;height:14px; background:var(--amber);
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+nav.main-nav{display:flex; gap:4px; flex-wrap:wrap;}
+nav.main-nav a{
+  color:var(--stone); font-size:0.92rem; padding:8px 12px;
+  border-radius:var(--radius); transition:color 0.15s, background 0.15s;
+}
+nav.main-nav a:hover{color:var(--fog); background:var(--slate); text-decoration:none;}
+nav.main-nav a.active{color:var(--basalt); background:var(--amber);}
+
+/* --- Layout --- */
+main{max-width:1100px; margin:0 auto; padding:48px 24px 96px;}
+.page-title{font-size:2.1rem; margin-bottom:0.2em;}
+.page-kicker{
+  color:var(--sea); font-family:'JetBrains Mono', monospace;
+  font-size:0.78rem; letter-spacing:0.12em; text-transform:uppercase;
+  margin-bottom:10px; display:block;
+}
+.page-lede{color:var(--stone); max-width:640px; margin-bottom:36px;}
+
+/* --- Cards --- */
+.card{
+  background:var(--slate); border:1px solid rgba(139,154,150,0.15);
+  border-radius:var(--radius); padding:24px;
+}
+.card + .card{margin-top:16px;}
+.card h3{font-size:1.1rem; margin-bottom:6px;}
+.card .meta{color:var(--stone); font-size:0.88rem; margin-bottom:10px;}
+.tag{
+  display:inline-block; font-family:'JetBrains Mono', monospace; font-size:0.72rem;
+  color:var(--sea); border:1px solid var(--sea); padding:2px 8px; border-radius:20px;
+  margin-right:6px;
+}
+.price{font-family:'JetBrains Mono', monospace; color:var(--amber); font-weight:600; font-size:1.05rem;}
+
+.empty-state{
+  border:1px dashed var(--slate); border-radius:var(--radius);
+  padding:40px 24px; text-align:center; color:var(--stone);
+}
+.empty-state strong{color:var(--fog); display:block; margin-bottom:6px; font-family:'Fraunces',serif; font-size:1.1rem;}
+
+/* --- Grid --- */
+.grid{display:grid; gap:16px;}
+.grid-2{grid-template-columns:repeat(auto-fit, minmax(280px,1fr));}
+.grid-4{grid-template-columns:repeat(auto-fit, minmax(200px,1fr));}
+
+/* --- Stat blocks --- */
+.stat{border-left:2px solid var(--sea); padding-left:14px;}
+.stat .num{font-family:'Fraunces',serif; font-size:1.8rem; color:var(--fog); display:block;}
+.stat .label{color:var(--stone); font-size:0.82rem; text-transform:uppercase; letter-spacing:0.06em;}
+
+/* --- Table (Budget) --- */
+table{width:100%; border-collapse:collapse; margin-top:8px;}
+th,td{text-align:left; padding:10px 12px; border-bottom:1px solid var(--slate); font-size:0.92rem;}
+th{color:var(--stone); font-family:'JetBrains Mono',monospace; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.06em; font-weight:400;}
+td.num, th.num{text-align:right; font-family:'JetBrains Mono',monospace;}
+tfoot td{font-weight:600; color:var(--amber); border-top:2px solid var(--sea); border-bottom:none;}
+
+/* --- Checklist (Suivi) --- */
+.task-row{display:flex; align-items:flex-start; gap:14px; padding:14px 0; border-bottom:1px solid var(--slate);}
+.task-row input[type=checkbox]{width:20px; height:20px; margin-top:2px; accent-color:var(--amber); cursor:pointer; flex-shrink:0;}
+.task-row .task-title{font-weight:500; color:var(--fog);}
+.task-row .task-desc{color:var(--stone); font-size:0.88rem; margin-top:2px;}
+.task-row.done .task-title{color:var(--stone); text-decoration:line-through;}
+.progress-bar{height:6px; background:var(--slate); border-radius:4px; overflow:hidden; margin:16px 0 32px;}
+.progress-bar-fill{height:100%; background:var(--sea); width:0%; transition:width 0.3s;}
+
+/* --- Timeline (Feuille de route) --- */
+.day-block{position:relative; padding-left:28px; margin-bottom:32px; border-left:1px solid var(--slate);}
+.day-block::before{
+  content:''; position:absolute; left:-6px; top:2px;
+  width:11px; height:11px; background:var(--amber);
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+.day-block h3{color:var(--amber); font-size:0.95rem; font-family:'JetBrains Mono',monospace; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:12px;}
+
+footer{max-width:1100px; margin:0 auto; padding:24px; color:var(--stone); font-size:0.8rem; text-align:center;}
+
+@media (max-width:640px){
+  .nav-wrap{flex-direction:column; align-items:flex-start; gap:10px;}
+  nav.main-nav{width:100%; overflow-x:auto;}
+  main{padding:32px 16px 72px;}
+  .page-title{font-size:1.6rem;}
+}
