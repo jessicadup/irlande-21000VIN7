@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Suivi des tâches — Irlande du Nord</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="nav-wrap">
+    <div class="brand"><span class="mark"></span> Irlande du Nord</div>
+    <nav class="main-nav">
+      <a href="index.html">Accueil</a>
+      <a href="feuille-de-route.html">Feuille de route</a>
+      <a href="logements.html">Logements</a>
+      <a href="visites.html">Visites</a>
+      <a href="budget.html">Budget</a>
+      <a href="suivi.html" class="active">Suivi</a>
+    </nav>
+  </div>
+</header>
+<div class="columns-divider"></div>
+
+<main>
+  <span class="page-kicker">Ne rien oublier</span>
+  <h1 class="page-title">Suivi des tâches</h1>
+  <p class="page-lede">Les étapes à réaliser dans l'ordre pour préparer le voyage. Coche au fur et à mesure.</p>
+
+  <div class="progress-bar"><div class="progress-bar-fill" id="progress-fill"></div></div>
+  <div id="progress-label" class="meta" style="color:var(--stone); margin-top:-24px; margin-bottom:24px; font-family:'JetBrains Mono',monospace; font-size:0.82rem;"></div>
+
+  <div id="task-list"></div>
+</main>
+
+<div class="columns-divider"></div>
+<footer>Site privé — lien non référencé, à ne partager qu'en famille</footer>
+
+<script>
+const TASKS = [
+  {id:"dates", title:"Cadrer les dates et la durée", desc:"Fixer une fenêtre possible en avril/mai, confirmer 4 ou 5 jours, vérifier les disponibilités de tous."},
+  {id:"participants", title:"Confirmer la liste définitive des participants", desc:"Trancher sur la présence des deux nièces (16 et 19 ans)."},
+  {id:"vols", title:"Choisir les aéroports de départ et rechercher les vols", desc:"Toulouse pour vous ; à voir si Montpellier a un vol équivalent pour les frères, sinon départ groupé de Toulouse."},
+  {id:"itineraire", title:"Définir l'itinéraire géographique", desc:"Belfast, Chaussée des Géants, Causeway Coast, Derry..."},
+  {id:"logements", title:"Rechercher et réserver les logements", desc:"Adaptés au groupe, avec tarifs et liens de réservation."},
+  {id:"voiture", title:"Réserver la location de voiture", desc:"Conduite à gauche, taille adaptée (sièges enfants, bagages, nb de personnes)."},
+  {id:"visites", title:"Planifier les visites et excursions", desc:"Adaptées aux enfants (6 ans et 2 ans½), avec horaires et tarifs."},
+  {id:"feuille", title:"Construire la feuille de route jour par jour", desc:"Assembler vols, logements et visites dans un planning chronologique."},
+  {id:"budget", title:"Calculer le budget global et par foyer", desc:"Additionner tous les tarifs et répartir les coûts si besoin."},
+  {id:"site", title:"Créer et structurer le site web", desc:"Fait — squelette en place, à enrichir au fur et à mesure."},
+  {id:"ligne", title:"Mettre en ligne et partager le lien", desc:"Héberger le site, tester, puis partager le lien (privé, non référencé) à la famille."},
+  {id:"maj", title:"Tenir le site à jour", desc:"Mettre à jour au fur et à mesure des réservations confirmées."},
+];
+
+const STORAGE_KEY = "irlande_tasks_done";
+
+function getDone(){
+  try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
+  catch(e){ return {}; }
+}
+function setDone(done){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(done));
+}
+
+function render(){
+  const done = getDone();
+  const list = document.getElementById("task-list");
+  list.innerHTML = "";
+  TASKS.forEach(t => {
+    const row = document.createElement("div");
+    row.className = "task-row" + (done[t.id] ? " done" : "");
+    row.innerHTML = `
+      <input type="checkbox" id="chk-${t.id}" ${done[t.id] ? "checked" : ""}>
+      <div>
+        <div class="task-title">${t.title}</div>
+        <div class="task-desc">${t.desc}</div>
+      </div>
+    `;
+    row.querySelector("input").addEventListener("change", e => {
+      const d = getDone();
+      d[t.id] = e.target.checked;
+      setDone(d);
+      render();
+    });
+    list.appendChild(row);
+  });
+
+  const total = TASKS.length;
+  const doneCount = TASKS.filter(t => done[t.id]).length;
+  document.getElementById("progress-fill").style.width = (doneCount/total*100) + "%";
+  document.getElementById("progress-label").textContent = `${doneCount} / ${total} étapes terminées`;
+}
+
+render();
+</script>
+</body>
+</html>
