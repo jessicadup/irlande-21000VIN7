@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
 <title>Suivi des tâches — Irlande du Nord</title>
-<link rel="stylesheet" href="css/style.css?v=3">
+<link rel="stylesheet" href="css/style.css?v=4">
+<style>.task-row input:disabled{cursor:not-allowed; opacity:0.55;}</style>
 </head>
 <body>
 
@@ -28,10 +29,12 @@
 <main>
   <span class="page-kicker">Ne rien oublier</span>
   <h1 class="page-title">Suivi des tâches</h1>
-  <p class="page-lede">Les étapes à réaliser dans l'ordre pour préparer le voyage. Coche au fur et à mesure.</p>
+  <p class="page-lede">Les étapes à réaliser dans l'ordre pour préparer le voyage. Coche au fur et à mesure : la liste est partagée avec toute la famille.</p>
 
   <div class="progress-bar"><div class="progress-bar-fill" id="progress-fill"></div></div>
   <div id="progress-label" class="meta" style="color:var(--stone); margin-top:-24px; margin-bottom:24px; font-family:'JetBrains Mono',monospace; font-size:0.82rem;"></div>
+
+  <div id="sync" style="color:var(--stone); font-family:'JetBrains Mono',monospace; font-size:0.78rem; margin:-16px 0 24px;"></div>
 
   <div id="task-list"></div>
 </main>
@@ -60,34 +63,45 @@ const TASKS = [
 ];
 
 const STORAGE_KEY = "irlande_tasks_done";
-
-function getDone(){
+function getLocal(){
   try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
   catch(e){ return {}; }
 }
-function setDone(done){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(done));
+function setLocal(d){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }catch(e){}
 }
 
+let done = getLocal();   // cases cochées
+let P = null;            // le module partage.js, une fois chargé
+let mode = "local";      // "local" = cet appareil seulement | "partage" = base en ligne
+let editeur = false;     // code familial saisi ?
+
+function statut(msg){ document.getElementById("sync").textContent = msg; }
+
 function render(){
-  const done = getDone();
+  const verrou = (mode === "partage" && !editeur);
   const list = document.getElementById("task-list");
   list.innerHTML = "";
   TASKS.forEach(t => {
     const row = document.createElement("div");
     row.className = "task-row" + (done[t.id] ? " done" : "");
     row.innerHTML = `
-      <input type="checkbox" id="chk-${t.id}" ${done[t.id] ? "checked" : ""}>
+      <input type="checkbox" id="chk-${t.id}" ${done[t.id] ? "checked" : ""} ${verrou ? "disabled" : ""}>
       <div>
         <div class="task-title">${t.title}</div>
         <div class="task-desc">${t.desc}</div>
       </div>
     `;
-    row.querySelector("input").addEventListener("change", e => {
-      const d = getDone();
-      d[t.id] = e.target.checked;
-      setDone(d);
-      render();
+    row.querySelector("input").addEventListener("change", async e => {
+      const cochee = e.target.checked;
+      done[t.id] = cochee; setLocal(done); render();
+      if (mode === "partage"){
+        try{ await P.fusionner("suivi", {[t.id]: cochee}); }
+        catch(err){
+          done[t.id] = !cochee; setLocal(done); render();
+          statut("Enregistrement impossible : réessaie dans un instant.");
+        }
+      }
     });
     list.appendChild(row);
   });
@@ -96,9 +110,40 @@ function render(){
   const doneCount = TASKS.filter(t => done[t.id]).length;
   document.getElementById("progress-fill").style.width = (doneCount/total*100) + "%";
   document.getElementById("progress-label").textContent = `${doneCount} / ${total} étapes terminées`;
+  if (verrou) statut("● Partagé avec la famille. Pour cocher, clique sur « Modifier » (en bas à droite) et entre le code familial.");
 }
 
 render();
+
+// Connexion à la base en ligne (si elle n'est pas joignable, la page marche comme avant, sur cet appareil)
+(async function demarrer(){
+  try{
+    P = await import("./partage.js?v=4");
+    if (!(await P.connecter())) throw new Error("connexion impossible");
+    editeur = P.estEditeur();
+    P.installerBarre(ed => { editeur = ed; render(); });
+    mode = "partage";
+    statut("Connexion à la liste partagée…");
+    render();
+    P.ecouter("suivi", (data, deCache) => {
+      if (data === null){
+        // Liste partagée encore vide : on y met les cases déjà cochées sur cet appareil
+        if (editeur && Object.values(done).some(Boolean)) P.fusionner("suivi", done).catch(() => {});
+      } else {
+        done = data; setLocal(done);
+      }
+      render();
+      statut(deCache ? "○ Dernières données reçues (en attente de connexion)." : "● Synchronisé avec toute la famille.");
+      if (mode === "partage" && !editeur) statut("● Partagé avec la famille. Pour cocher, clique sur « Modifier » (en bas à droite) et entre le code familial.");
+    }, err => {
+      mode = "local"; render();
+      statut("Liste partagée indisponible (" + (err && err.code ? err.code : "erreur") + ") : les cases sont enregistrées sur cet appareil seulement.");
+    });
+  }catch(e){
+    mode = "local"; render();
+    statut("Hors ligne : les cases sont enregistrées sur cet appareil seulement.");
+  }
+})();
 </script>
 </body>
 </html>
