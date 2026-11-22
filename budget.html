@@ -5,7 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
 <title>Budget — Irlande du Nord</title>
-<link rel="stylesheet" href="css/style.css?v=2">
+<link rel="stylesheet" href="css/style.css?v=3">
+<style>
+  .table-wrap{overflow-x:auto;}
+  .table-wrap table{min-width:680px;}
+  tr.cat td{color:var(--sea); font-family:'JetBrains Mono',monospace; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.08em; background:rgba(42,51,57,0.5); border-bottom:1px solid var(--sea);}
+  .small{color:var(--stone); font-size:0.82rem;}
+  .tag.st-reserve{color:var(--sea); border-color:var(--sea);}
+  .tag.st-estime{color:var(--amber); border-color:var(--amber);}
+  .tag.st-achiffrer{color:var(--stone); border-color:var(--stone);}
+  .tag.st-hypothese{color:var(--stone); border-color:var(--stone); border-style:dashed;}
+  td.num.grey{color:var(--stone);}
+</style>
 </head>
 <body>
 
@@ -28,61 +39,154 @@
 <main>
   <span class="page-kicker">Tous les tarifs</span>
   <h1 class="page-title">Budget</h1>
-  <p class="page-lede">Le récapitulatif des coûts, par catégorie. Mis à jour au fur et à mesure des réservations.</p>
+  <p class="page-lede">Les totaux (global, par famille et par personne) se calculent tout seuls à partir des tarifs. Mis à jour au fur et à mesure des réservations.</p>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Catégorie</th>
-        <th>Détail</th>
-        <th class="num">Tarif</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr><td>Vols</td><td style="color:var(--stone);">Toulouse → Dublin, départ groupé (2 familles) — <a href="https://www.aerlingus.com/fr-fr/" target="_blank">Réserver sur Aer Lingus →</a></td><td class="num">—</td></tr>
-      <tr><td>Parking aéroport Toulouse</td><td style="color:var(--stone);">Parking P6, 2 voitures, 6 jours (11 → 16 avril)</td><td class="num">65€ × 2 = 130€</td></tr>
-      <tr><td>Location de voiture (Dublin)</td><td style="color:var(--stone);">2 voitures à louer à Dublin (une par famille)</td><td class="num">—</td></tr>
-      <tr><td>Logements</td><td style="color:var(--stone);">À rechercher</td><td class="num">—</td></tr>
-      <tr><td>Visites & excursions</td><td style="color:var(--stone);">Titanic Belfast (estimation, groupe) + reste à définir</td><td class="num">~£150</td></tr>
-    </tbody>
-    <tfoot>
-      <tr><td colspan="2">Total estimé</td><td class="num">130€ + —</td></tr>
-    </tfoot>
-  </table>
+  <div class="grid grid-4" style="margin-bottom:20px;">
+    <div class="stat"><span class="num" id="s-total">—</span><span class="label">Total chiffré à ce jour</span></div>
+    <div class="stat"><span class="num" id="s-f1">—</span><span class="label">Famille N°1</span></div>
+    <div class="stat"><span class="num" id="s-f2">—</span><span class="label">Famille N°2</span></div>
+    <div class="stat"><span class="num" id="s-pp">—</span><span class="label">Par personne (8)</span></div>
+  </div>
+  <div id="infos" style="margin-bottom:28px;"></div>
 
-  <h2 style="margin-top:48px; font-size:1.3rem;">Démarches administratives</h2>
-  <p class="page-lede" style="margin-bottom:20px;">Coûts individuels, à régler par chaque foyer directement.</p>
-
-  <div class="card" style="margin-bottom:16px;">
-    <h3>Famille N°1 (vous)</h3>
-    <div class="meta">Passeports à renouveler — demande lancée, à récupérer</div>
-    <table style="margin-top:0;">
-      <tbody>
-        <tr><td>1 passeport adulte</td><td class="num">86 €</td></tr>
-        <tr><td>2 passeports enfants (moins de 15 ans)</td><td class="num">17 € × 2 = 34 €</td></tr>
-      </tbody>
-      <tfoot>
-        <tr><td>Sous-total passeports</td><td class="num">120 €</td></tr>
-      </tfoot>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Poste</th>
+          <th>Statut</th>
+          <th class="num">Famille N°1</th>
+          <th class="num">Famille N°2</th>
+          <th class="num">Total</th>
+        </tr>
+      </thead>
+      <tbody id="lignes"></tbody>
+      <tfoot id="pied"></tfoot>
     </table>
-    <p style="margin-top:12px;"><a href="https://www.service-public.gouv.fr/particuliers/vosdroits/F21091" target="_blank">→ Démarche officielle de renouvellement de passeport (Service-Public.fr)</a></p>
   </div>
 
-  <div class="card" style="margin-bottom:16px;">
-    <h3>ETA — les deux familles</h3>
-    <div class="meta">Autorisation de voyage électronique, obligatoire pour les 8 voyageurs</div>
-    <p style="margin:0;">Environ 23 € (£20) par personne, soit ~184 € au total pour le groupe.</p>
-    <p style="margin-top:12px;"><a href="https://www.gov.uk/guidance/apply-for-an-electronic-travel-authorisation-eta" target="_blank">→ Démarche officielle ETA (site gouvernemental britannique)</a></p>
-  </div>
-
-  <div style="margin-top:32px;" class="empty-state">
-    <strong>Répartition par foyer à venir</strong>
-    Une fois les tarifs connus, le coût par foyer (Famille 1, Famille 2) sera détaillé ici.
+  <div class="card" style="margin-top:32px;">
+    <h3>Démarches officielles</h3>
+    <div class="meta">Pour les passeports et l'ETA, passer uniquement par les sites officiels</div>
+    <p style="margin:0;"><a href="https://www.service-public.gouv.fr/particuliers/vosdroits/F21091" target="_blank">→ Renouvellement de passeport (Service-Public.fr)</a></p>
+    <p style="margin:8px 0 0;"><a href="https://www.gov.uk/guidance/apply-for-an-electronic-travel-authorisation-eta" target="_blank">→ ETA, autorisation de voyage électronique (site gouvernemental britannique)</a></p>
   </div>
 </main>
+
 
 <div class="columns-divider"></div>
 <footer>Site privé — lien non référencé, à ne partager qu'en famille</footer>
 
+
+<script>
+// ======================================================================
+//  LES CHIFFRES : c'est le seul endroit à modifier. Le reste se calcule.
+// ======================================================================
+// prix   : tarif unitaire (null tant qu'il est inconnu)
+// devise : "EUR" ou "GBP" (les livres sont converties avec TAUX_LIVRE)
+// q1, q2 : quantité pour la famille N°1 / la famille N°2
+//          (0.5 et 0.5 = coût partagé moitié-moitié entre les deux familles)
+// statut : "reserve" (payé ou réservé) | "estime" | "a_chiffrer" | "hypothese" (affiché mais non compté)
+const TAUX_LIVRE = 1.15; // 1 £ = 1,15 € (indicatif, à ajuster)
+
+const LIGNES = [
+  {cat:"Transport", poste:"Vols Toulouse ↔ Dublin", detail:"Aer Lingus, aller-retour, départ groupé", unite:"par personne", prix:null, devise:"EUR", q1:4, q2:4, statut:"a_chiffrer",
+   note:"Fourchette observée : ~48 à 150 € l'A/R par personne (indicatif).", lien:"https://www.aerlingus.com/fr-fr/", lienTexte:"Aer Lingus →"},
+  {cat:"Transport", poste:"Location de voiture à Dublin", detail:"Une voiture par famille, du 11 au 16 avril", unite:"par voiture", prix:null, devise:"EUR", q1:1, q2:1, statut:"a_chiffrer"},
+  {cat:"Transport", poste:"Parking aéroport de Toulouse", detail:"Parking P6, 6 jours (11 → 16 avril)", unite:"par voiture", prix:65, devise:"EUR", q1:1, q2:1, statut:"estime"},
+
+  {cat:"Hébergement", poste:"Logement Belfast", detail:"4 nuits (11 → 15 avril), coût total partagé", unite:"au total", prix:null, devise:"EUR", q1:0.5, q2:0.5, statut:"a_chiffrer",
+   note:"Grande maison : 150 à 350 €/nuit (indicatif). Formule à décider : une maison pour tous ou deux logements."},
+  {cat:"Hébergement", poste:"Logement Dublin", detail:"1 nuit (15 avril), coût total partagé", unite:"au total", prix:null, devise:"EUR", q1:0.5, q2:0.5, statut:"a_chiffrer",
+   note:"150 à 210 €/nuit (indicatif)."},
+
+  {cat:"Visites", poste:"Titanic Belfast, famille N°1", detail:"Billet famille (2 adultes + 2 enfants)", unite:"billet famille", prix:62, devise:"GBP", q1:1, q2:0, statut:"estime",
+   note:"Tarif « à partir de » 2026, à reconfirmer pour 2027."},
+  {cat:"Visites", poste:"Titanic Belfast, famille N°2", detail:"4 billets adulte (la nièce a 16 ans)", unite:"par billet", prix:24.95, devise:"GBP", q1:0, q2:4, statut:"estime",
+   note:"Tarif « à partir de » 2026, à reconfirmer pour 2027."},
+
+  {cat:"Démarches", poste:"Passeport adulte, famille N°1", detail:"Renouvellement : demande lancée, à récupérer", unite:"par passeport", prix:86, devise:"EUR", q1:1, q2:0, statut:"reserve"},
+  {cat:"Démarches", poste:"Passeports enfants, famille N°1", detail:"Moins de 15 ans : demande lancée, à récupérer", unite:"par passeport", prix:17, devise:"EUR", q1:2, q2:0, statut:"reserve"},
+  {cat:"Démarches", poste:"Passeports adultes, famille N°2", detail:"Seulement si un renouvellement est nécessaire", unite:"par passeport", prix:86, devise:"EUR", q1:0, q2:3, statut:"hypothese"},
+  {cat:"Démarches", poste:"Passeport ado (16 ans), famille N°2", detail:"Seulement si un renouvellement est nécessaire", unite:"par passeport", prix:42, devise:"EUR", q1:0, q2:1, statut:"hypothese",
+   note:"Tarif mineur de 15 ans et plus, à confirmer sur Service-Public."},
+  {cat:"Démarches", poste:"ETA (autorisation de voyage UK)", detail:"Obligatoire pour les 8 voyageurs, à demander une fois les nouveaux passeports en main", unite:"par personne", prix:23, devise:"EUR", q1:4, q2:4, statut:"estime",
+   note:"Environ £20 par personne."},
+  {cat:"Démarches", poste:"Assurance voyage / santé", detail:"La CEAM ne couvre pas le Royaume-Uni", unite:"par famille", prix:null, devise:"EUR", q1:1, q2:1, statut:"a_chiffrer",
+   note:"Souvent incluse avec certaines cartes bancaires : à vérifier."},
+
+  {cat:"Sur place", poste:"Repas, carburant, divers", detail:"Budget libre pour le séjour", unite:"par famille", prix:null, devise:"EUR", q1:1, q2:1, statut:"a_chiffrer"}
+];
+// ======================================================================
+//  Fin des chiffres. Ci-dessous : le calcul et l'affichage (ne pas toucher).
+// ======================================================================
+
+const STATUTS = {
+  reserve:    {label:"Payé / réservé", cls:"st-reserve"},
+  estime:     {label:"Estimé",         cls:"st-estime"},
+  a_chiffrer: {label:"À chiffrer",     cls:"st-achiffrer"},
+  hypothese:  {label:"Hypothèse",      cls:"st-hypothese"}
+};
+const fmt = n => new Intl.NumberFormat("fr-FR", {style:"currency", currency:"EUR", maximumFractionDigits:0}).format(Math.round(n));
+const fmtUnit = (prix, devise) => devise === "GBP"
+  ? "£" + String(prix).replace(".", ",")
+  : new Intl.NumberFormat("fr-FR", {style:"currency", currency:"EUR", maximumFractionDigits:2}).format(prix);
+
+function calculer(){
+  const r = {t1:0, t2:0, paye:0, hypo:0, manque:[]};
+  LIGNES.forEach(l => {
+    const unit = (l.prix === null) ? null : l.prix * (l.devise === "GBP" ? TAUX_LIVRE : 1);
+    l.e1 = (unit === null) ? null : unit * l.q1;
+    l.e2 = (unit === null) ? null : unit * l.q2;
+    if (unit === null || l.statut === "a_chiffrer"){
+      if (!r.manque.includes(l.poste)) r.manque.push(l.poste);
+      return;
+    }
+    if (l.statut === "hypothese"){ r.hypo += l.e1 + l.e2; return; }
+    r.t1 += l.e1; r.t2 += l.e2;
+    if (l.statut === "reserve") r.paye += l.e1 + l.e2;
+  });
+  return r;
+}
+
+function detailCalcul(l){
+  if (l.prix === null) return "";
+  if (l.q1 === 0.5 && l.q2 === 0.5) return fmtUnit(l.prix, l.devise) + " au total, partagé";
+  return fmtUnit(l.prix, l.devise) + " × " + (l.q1 + l.q2) + " (" + l.unite + ")";
+}
+
+function afficher(){
+  const r = calculer();
+  const cell = (v, q, grey) => (v === null || q === 0) ? '<td class="num grey">—</td>' : '<td class="num' + (grey ? ' grey' : '') + '">' + (grey ? '(' + fmt(v) + ')' : fmt(v)) + '</td>';
+  let html = "", cat = "";
+  LIGNES.forEach(l => {
+    if (l.cat !== cat){ cat = l.cat; html += '<tr class="cat"><td colspan="5">' + cat + '</td></tr>'; }
+    const st = STATUTS[l.statut];
+    const grey = (l.statut === "hypothese");
+    const tot = (l.e1 === null) ? null : l.e1 + l.e2;
+    const calc = detailCalcul(l);
+    html += '<tr><td><strong>' + l.poste + '</strong><br><span class="small">' + l.detail + (calc ? ' · ' + calc : '') + '</span>' +
+            (l.note ? '<br><span class="small">' + l.note + '</span>' : '') +
+            (l.lien ? '<br><span class="small"><a href="' + l.lien + '" target="_blank">' + l.lienTexte + '</a></span>' : '') + '</td>' +
+            '<td><span class="tag ' + st.cls + '">' + st.label + '</span></td>' +
+            cell(l.e1, l.q1, grey) + cell(l.e2, l.q2, grey) + cell(tot, 1, grey) + '</tr>';
+  });
+  document.getElementById("lignes").innerHTML = html;
+  document.getElementById("pied").innerHTML = '<tr><td colspan="2">Total chiffré à ce jour</td><td class="num">' + fmt(r.t1) + '</td><td class="num">' + fmt(r.t2) + '</td><td class="num">' + fmt(r.t1 + r.t2) + '</td></tr>';
+
+  document.getElementById("s-total").textContent = fmt(r.t1 + r.t2);
+  document.getElementById("s-f1").textContent = fmt(r.t1);
+  document.getElementById("s-f2").textContent = fmt(r.t2);
+  document.getElementById("s-pp").textContent = fmt((r.t1 + r.t2) / 8);
+
+  let infos = "";
+  if (r.manque.length) infos += '<p style="margin:0 0 6px; color:var(--amber);">Total partiel : pas encore chiffré → ' + r.manque.join(", ") + '.</p>';
+  if (r.hypo > 0) infos += '<p class="small" style="margin:0 0 6px;">Non compté (hypothèse) : passeports de la famille N°2, environ ' + fmt(r.hypo) + ' si un renouvellement est nécessaire.</p>';
+  infos += '<p class="small" style="margin:0 0 6px;">Dont déjà payé ou réservé : ' + fmt(r.paye) + '.</p>';
+  infos += '<p class="small" style="margin:0;">Livres converties en euros à 1 £ = ' + String(TAUX_LIVRE).replace(".", ",") + ' € (taux indicatif).</p>';
+  document.getElementById("infos").innerHTML = infos;
+}
+afficher();
+</script>
 </body>
 </html>
