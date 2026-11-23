@@ -5,7 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
 <title>Logements — Irlande du Nord</title>
-<link rel="stylesheet" href="css/style.css?v=5">
+<link rel="stylesheet" href="css/style.css?v=6">
+<style>
+  .etape{margin-bottom:40px;}
+  .etape h2{font-size:1.3rem; margin-bottom:4px;}
+  .etape .intro{color:var(--stone); font-size:0.9rem; margin:0 0 16px; max-width:640px;}
+  .small{color:var(--stone); font-size:0.82rem;}
+  .tag.st-etude{color:var(--stone); border-color:var(--stone);}
+  .tag.st-retenu{color:var(--amber); border-color:var(--amber);}
+  .tag.st-reserve{color:var(--sea); border-color:var(--sea);}
+  .btn{font:inherit; cursor:pointer; border-radius:var(--radius); padding:6px 12px; border:1px solid var(--amber); background:transparent; color:var(--amber);}
+  .btn:hover{background:var(--amber); color:var(--basalt);}
+  .btn.discret{border-color:var(--stone); color:var(--stone);}
+  .actions{margin-top:14px; display:flex; gap:8px; flex-wrap:wrap;}
+  .ajout{margin-top:16px;}
+</style>
 </head>
 <body>
 
@@ -28,42 +42,175 @@
 <main>
   <span class="page-kicker">Hébergements</span>
   <h1 class="page-title">Logements</h1>
-  <p class="page-lede">Chaque étape du voyage, avec l'adresse, les dates, le tarif et le lien de réservation.</p>
+  <p class="page-lede">Les propositions de logement pour chaque étape, avec le tarif et le lien de l'annonce. Un logement « retenu » ou « réservé » alimente automatiquement la ligne correspondante du Budget.</p>
+  <div id="sync" style="color:var(--stone); font-family:'JetBrains Mono',monospace; font-size:0.78rem; margin:-20px 0 28px;"></div>
 
-  <div class="grid grid-2" style="margin-bottom:16px;">
-    <div class="card">
-      <h3>Logement 1 — Belfast</h3>
-      <div class="meta">4 nuits · du 11 au 15 avril</div>
-      <p style="color:var(--stone);">À rechercher. Pour 8 personnes (2 adultes + 2 enfants, 2 adultes, 1 adulte, 1 ado). Formule à décider : une grande maison pour tous, ou deux logements côte à côte.</p>
-    </div>
-    <div class="card">
-      <h3>Logement 2 — Dublin</h3>
-      <div class="meta">1 nuit · le 15 avril</div>
-      <p style="color:var(--stone);">À rechercher, proche de l'aéroport ou du centre selon la visite prévue ce jour-là.</p>
-    </div>
-  </div>
+  <section class="etape">
+    <h2>Belfast</h2>
+    <div class="meta">4 nuits · du 11 au 15 avril</div>
+    <p class="intro">Pour 8 personnes (2 adultes + 2 enfants, 2 adultes, 1 adulte, 1 ado). Formule à décider : une grande maison pour tous, ou deux logements côte à côte.</p>
+    <div id="liste-belfast"></div>
+    <div class="ajout" id="ajout-belfast"></div>
+  </section>
 
-  <div class="empty-state">
-    <strong>Recherches à venir</strong>
-    Les propositions concrètes (annonces, tarifs, liens) arriveront ici au fur et à mesure.
-  </div>
-
-  <!-- Modèle de carte logement, à dupliquer pour chaque hébergement trouvé :
-  <div class="card">
-    <h3>[Nom du logement]</h3>
-    <div class="meta">[Ville / région] · [date d'arrivée] → [date de départ] · [Nb nuits] nuits</div>
-    <p>[Description courte — capacité, équipements]</p>
-    <span class="tag">[Type : Airbnb / Hôtel / B&B]</span>
-    <div style="margin-top:12px; display:flex; justify-content:space-between; align-items:center;">
-      <span class="price">[Tarif total] €</span>
-      <a href="[lien de réservation]" target="_blank">Voir l'annonce →</a>
-    </div>
-  </div>
-  -->
+  <section class="etape">
+    <h2>Dublin</h2>
+    <div class="meta">1 nuit · le 15 avril</div>
+    <p class="intro">Proche de l'aéroport ou du centre selon la visite prévue ce jour-là.</p>
+    <div id="liste-dublin"></div>
+    <div class="ajout" id="ajout-dublin"></div>
+  </section>
 </main>
+
 
 <div class="columns-divider"></div>
 <footer>Site privé — lien non référencé, à ne partager qu'en famille</footer>
 
+
+<script>
+const ETAPES = [{id:"belfast", nom:"Belfast"}, {id:"dublin", nom:"Dublin"}];
+const STATUTS = {
+  etude:   {label:"À l'étude", cls:"st-etude"},
+  retenu:  {label:"Retenu",    cls:"st-retenu"},
+  reserve: {label:"Réservé",   cls:"st-reserve"}
+};
+const ORIGINE = [];   // aucune annonce d'origine : tout se saisit sur le site
+const CHAMPS = [
+  {cle:"nom", label:"Nom du logement", type:"texte", requis:true},
+  {cle:"etape", label:"Étape", type:"choix", requis:true, options:[{v:"belfast", l:"Belfast (11 → 15 avril)"}, {v:"dublin", l:"Dublin (15 avril)"}]},
+  {cle:"lieu", label:"Ville / quartier", type:"texte"},
+  {cle:"lien", label:"Lien de l'annonce", type:"lien"},
+  {cle:"tarif", label:"Tarif total pour le séjour (€)", type:"montant", aide:"Si le statut est « Retenu » ou « Réservé », ce tarif alimente le Budget."},
+  {cle:"statut", label:"Statut", type:"choix", options:[{v:"etude", l:"À l'étude"}, {v:"retenu", l:"Retenu"}, {v:"reserve", l:"Réservé"}]},
+  {cle:"capacite", label:"Capacité et équipements", type:"long"},
+  {cle:"note", label:"Note (avantages, inconvénients)", type:"long"}
+];
+
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+const nl = s => esc(s).replace(/\n/g, "<br>");
+const lienSur = u => /^https?:\/\//i.test(String(u || "").trim()) ? String(u).trim() : "";
+const fmt = n => new Intl.NumberFormat("fr-FR", {style:"currency", currency:"EUR", minimumFractionDigits:0, maximumFractionDigits:2}).format(n);
+
+// Cartes d'origine + modifications de la base (null = carte supprimée)
+function fusionnerListe(origine, data){
+  data = data || {};
+  const m = new Map();
+  origine.forEach((c, i) => m.set(c.id, Object.assign({cree: i}, c)));
+  Object.keys(data).forEach(id => {
+    const d = data[id];
+    if (d === null){ m.delete(id); return; }
+    if (d && typeof d === "object") m.set(id, Object.assign({}, m.get(id) || {}, d, {id}));
+  });
+  return [...m.values()].sort((a, b) => (a.cree || 0) - (b.cree || 0));
+}
+
+let P = null, C = null;   // modules partage.js et cartes.js, une fois chargés
+let mode = "local";       // "local" = hors ligne | "partage" = base en ligne
+let editeur = false;      // code familial saisi ?
+let donnees = null;       // modifications venant de la base
+let statutTemp = "";
+
+const cartes = () => fusionnerListe(ORIGINE, donnees);
+const peutModifier = () => mode === "partage" && editeur && !!C;
+
+function carte(c, edit){
+  const st = STATUTS[c.statut] || STATUTS.etude;
+  const lien = lienSur(c.lien);
+  const aTarif = typeof c.tarif === "number" && isFinite(c.tarif);
+  return '<div class="card">' +
+    '<h3>' + esc(c.nom) + '</h3>' +
+    '<div class="meta">' + esc(c.lieu || "") + '</div>' +
+    (c.capacite ? '<p style="margin:0 0 8px;">' + nl(c.capacite) + '</p>' : '') +
+    (c.note ? '<p class="small" style="margin:0 0 10px;">' + nl(c.note) + '</p>' : '') +
+    '<span class="tag ' + st.cls + '">' + st.label + '</span>' +
+    '<div style="margin-top:12px; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">' +
+      (aTarif ? '<span class="price">' + fmt(c.tarif) + ' <span class="small">au total</span></span>' : '<span class="small">Tarif à renseigner</span>') +
+      (lien ? '<a href="' + esc(lien) + '" target="_blank" rel="noopener">Voir l\'annonce →</a>' : '') +
+    '</div>' +
+    (edit ? '<div class="actions"><button type="button" class="btn" data-act="edit" data-id="' + esc(c.id) + '">Modifier</button><button type="button" class="btn discret" data-act="del" data-id="' + esc(c.id) + '">Supprimer</button></div>' : '') +
+  '</div>';
+}
+
+function majStatut(){
+  let msg = statutTemp;
+  if (!msg){
+    if (mode === "partage") msg = editeur
+      ? (C ? "✏️ Modification activée : chaque changement est enregistré pour toute la famille." : "Le fichier cartes.js n'a pas pu être chargé : modification impossible.")
+      : "● Propositions partagées avec la famille. Pour ajouter ou modifier, clique sur « Modifier » (en bas à droite) et entre le code familial.";
+    else msg = "Hors ligne : la base partagée n'est pas joignable, les propositions ne peuvent pas s'afficher.";
+  }
+  document.getElementById("sync").textContent = msg;
+}
+
+function afficher(){
+  const edit = peutModifier();
+  const toutes = cartes();
+  ETAPES.forEach(e => {
+    const liste = toutes.filter(c => c.etape === e.id);
+    document.getElementById("liste-" + e.id).innerHTML = liste.length
+      ? liste.map(c => carte(c, edit)).join("")
+      : '<div class="empty-state"><strong>Aucune proposition pour l\'instant</strong>' + (edit ? 'Clique sur « Ajouter un logement » ci-dessous.' : 'Les annonces arriveront ici au fur et à mesure.') + '</div>';
+    document.getElementById("ajout-" + e.id).innerHTML = edit ? '<button type="button" class="btn" data-act="add" data-etape="' + e.id + '">+ Ajouter un logement à ' + e.nom + '</button>' : "";
+  });
+  majStatut();
+}
+
+async function ecrire(id, valeur){
+  const avant = donnees ? donnees[id] : undefined;
+  donnees = Object.assign({}, donnees || {}); donnees[id] = valeur;
+  afficher();
+  try{ await P.fusionner("logements", {[id]: valeur}); statutTemp = ""; majStatut(); }
+  catch(err){
+    if (avant === undefined) delete donnees[id]; else donnees[id] = avant;
+    statutTemp = "Enregistrement impossible : réessaie dans un instant."; afficher();
+  }
+}
+function supprimer(id){ return ecrire(id, null); }
+
+function ouvrir(c){
+  const nouveau = !c.id;
+  C.ouvrirFormulaire({
+    titre: nouveau ? "Ajouter un logement" : "Modifier le logement",
+    champs: CHAMPS,
+    valeurs: nouveau ? {etape: c.etape, statut: "etude"} : c,
+    onValider: v => ecrire(nouveau ? C.nouvelId() : c.id, Object.assign({}, v, {cree: nouveau ? Date.now() : (c.cree || 0)})),
+    onSupprimer: nouveau ? null : () => supprimer(c.id)
+  });
+}
+
+document.addEventListener("click", e => {
+  const b = e.target.closest && e.target.closest("[data-act]");
+  if (!b || !peutModifier()) return;
+  if (b.dataset.act === "add") return ouvrir({etape: b.dataset.etape});
+  const c = cartes().find(x => x.id === b.dataset.id); if (!c) return;
+  if (b.dataset.act === "edit") ouvrir(c);
+  else if (b.dataset.act === "del" && window.confirm("Supprimer définitivement « " + (c.nom || "ce logement") + " » ?")) supprimer(c.id);
+});
+
+afficher();
+
+// Connexion à la base en ligne
+(async function demarrer(){
+  try{
+    P = await import("./partage.js?v=6");
+    if (!(await P.connecter())) throw new Error("connexion impossible");
+    try{ C = await import("./cartes.js?v=6"); }catch(e){ C = null; }
+    editeur = P.estEditeur();
+    P.installerBarre(ed => { editeur = ed; afficher(); });
+    mode = "partage";
+    document.getElementById("sync").textContent = "Connexion aux propositions partagées…";
+    P.ecouter("logements", (data, deCache) => {
+      donnees = data; afficher();
+      if (deCache) document.getElementById("sync").textContent = "○ Dernières données reçues (en attente de connexion).";
+    }, err => {
+      mode = "local"; donnees = null;
+      statutTemp = "Propositions partagées indisponibles (" + (err && err.code ? err.code : "erreur") + ").";
+      afficher();
+    });
+  }catch(e){
+    mode = "local"; afficher();
+  }
+})();
+</script>
 </body>
 </html>

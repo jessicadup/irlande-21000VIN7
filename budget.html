@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
 <title>Budget — Irlande du Nord</title>
-<link rel="stylesheet" href="css/style.css?v=5">
+<link rel="stylesheet" href="css/style.css?v=6">
 <style>
   .table-wrap{overflow-x:auto;}
   .table-wrap table{min-width:680px;}
@@ -142,7 +142,11 @@ let mode = "local";      // "local" = valeurs du site | "partage" = base en lign
 let editeur = false;     // code familial saisi ?
 let statutTemp = "";     // message ponctuel (erreur d'enregistrement…)
 let renduEnAttente = false;
+let budgetData = null;   // tarifs saisis sur le site (document « budget »)
+let logData = null;      // cartes de la page Logements (document « logements »)
+const LOG_LIGNES = {logement_belfast:"belfast", logement_dublin:"dublin"};
 
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
 const fmt = n => new Intl.NumberFormat("fr-FR", {style:"currency", currency:"EUR", maximumFractionDigits:0}).format(Math.round(n));
 const fmtUnit = (prix, devise) => devise === "GBP"
   ? "£" + String(prix).replace(".", ",")
@@ -160,6 +164,25 @@ function appliquer(data){
   });
   taux = (typeof data._taux === "number" && data._taux > 0) ? data._taux : TAUX_LIVRE;
 }
+
+// Les logements « retenus » ou « réservés » (page Logements) alimentent les lignes de logement :
+// leurs tarifs s'additionnent (ex. deux logements côte à côte à Belfast).
+function appliquerLogements(){
+  LIGNES.forEach(l => { l.auto = null; });
+  if (!logData) return;
+  Object.keys(LOG_LIGNES).forEach(lid => {
+    const l = LIGNES.find(x => x.id === lid); if (!l) return;
+    const retenus = Object.keys(logData).map(k => logData[k]).filter(c =>
+      c && typeof c === "object" && c.etape === LOG_LIGNES[lid] && (c.statut === "retenu" || c.statut === "reserve") &&
+      typeof c.tarif === "number" && isFinite(c.tarif) && c.tarif >= 0
+    ).sort((a, b) => (a.cree || 0) - (b.cree || 0));
+    if (!retenus.length) return;
+    l.prix = retenus.reduce((t, c) => t + c.tarif, 0);
+    l.statut = retenus.every(c => c.statut === "reserve") ? "reserve" : "estime";
+    l.auto = retenus.map(c => c.nom || "logement");
+  });
+}
+function recalculer(){ appliquer(budgetData); appliquerLogements(); }
 
 function calculer(){
   const r = {t1:0, t2:0, paye:0, hypo:0, manque:[]};
@@ -212,12 +235,13 @@ function afficher(){
     const grey = (l.statut === "hypothese");
     const tot = (l.e1 === null) ? null : l.e1 + l.e2;
     const calc = detailCalcul(l);
-    const champPrix = edit ? '<label class="small edit-line">Tarif (' + l.unite + ') <input class="in-prix" data-id="' + l.id + '" inputmode="decimal" autocomplete="off" value="' + montantTexte(l.prix) + '" aria-label="Tarif : ' + l.poste + '"> ' + (l.devise === "GBP" ? "£" : "€") + '</label>' : '';
-    const celluleStatut = edit
+    const champPrix = (edit && !l.auto) ? '<label class="small edit-line">Tarif (' + l.unite + ') <input class="in-prix" data-id="' + l.id + '" inputmode="decimal" autocomplete="off" value="' + montantTexte(l.prix) + '" aria-label="Tarif : ' + l.poste + '"> ' + (l.devise === "GBP" ? "£" : "€") + '</label>' : '';
+    const celluleStatut = (edit && !l.auto)
       ? '<td><select class="in-statut" data-id="' + l.id + '" aria-label="Statut : ' + l.poste + '">' + Object.keys(STATUTS).map(k => '<option value="' + k + '"' + (k === l.statut ? ' selected' : '') + '>' + STATUTS[k].label + '</option>').join("") + '</select></td>'
       : '<td><span class="tag ' + st.cls + '">' + st.label + '</span></td>';
     html += '<tr><td><strong>' + l.poste + '</strong><br><span class="small">' + l.detail + (calc ? ' · ' + calc : '') + '</span>' +
             (l.note ? '<br><span class="small">' + l.note + '</span>' : '') +
+            (l.auto ? '<br><span class="small" style="color:var(--sea);">Alimenté par la page Logements : ' + esc(l.auto.join(" + ")) + '.</span>' : '') +
             (l.lien ? '<br><span class="small"><a href="' + l.lien + '" target="_blank">' + l.lienTexte + '</a></span>' : '') +
             champPrix + '</td>' + celluleStatut +
             cell(l.e1, l.q1, grey) + cell(l.e2, l.q2, grey) + cell(tot, 1, grey) + '</tr>';
@@ -299,21 +323,25 @@ afficher();
 // Connexion à la base en ligne (si elle n'est pas joignable, la page affiche les valeurs d'origine)
 (async function demarrer(){
   try{
-    P = await import("./partage.js?v=5");
+    P = await import("./partage.js?v=6");
     if (!(await P.connecter())) throw new Error("connexion impossible");
     editeur = P.estEditeur();
     P.installerBarre(ed => { editeur = ed; afficher(); });
     mode = "partage";
     document.getElementById("sync").textContent = "Connexion aux tarifs partagés…";
     P.ecouter("budget", (data, deCache) => {
-      appliquer(data);
+      budgetData = data; recalculer();
       if (enSaisie()) renduEnAttente = true; else afficher();
       if (deCache) document.getElementById("sync").textContent = "○ Dernières données reçues (en attente de connexion).";
     }, err => {
-      mode = "local"; appliquer(null);
+      mode = "local"; budgetData = null; logData = null; recalculer();
       statutTemp = "Tarifs partagés indisponibles (" + (err && err.code ? err.code : "erreur") + ") : valeurs d'origine du site affichées.";
       afficher();
     });
+    P.ecouter("logements", data => {
+      logData = data; recalculer();
+      if (enSaisie()) renduEnAttente = true; else afficher();
+    }, () => { logData = null; recalculer(); afficher(); });
   }catch(e){
     mode = "local"; afficher();
   }

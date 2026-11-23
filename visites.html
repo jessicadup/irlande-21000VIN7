@@ -5,7 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
 <title>Visites — Irlande du Nord</title>
-<link rel="stylesheet" href="css/style.css?v=5">
+<link rel="stylesheet" href="css/style.css?v=6">
+<style>
+  .small{color:var(--stone); font-size:0.82rem;}
+  .tag.t-oui{color:var(--sea); border-color:var(--sea);}
+  .tag.t-non{color:var(--amber); border-color:var(--amber);}
+  .tag.t-verif{color:var(--stone); border-color:var(--stone);}
+  .btn{font:inherit; cursor:pointer; border-radius:var(--radius); padding:6px 12px; border:1px solid var(--amber); background:transparent; color:var(--amber);}
+  .btn:hover{background:var(--amber); color:var(--basalt);}
+  .btn.discret{border-color:var(--stone); color:var(--stone);}
+  .actions{margin-top:14px; display:flex; gap:8px; flex-wrap:wrap;}
+  .ajout{margin-bottom:20px;}
+</style>
 </head>
 <body>
 
@@ -29,53 +40,176 @@
   <span class="page-kicker">À voir, à faire</span>
   <h1 class="page-title">Visites & excursions</h1>
   <p class="page-lede">Sites, activités et excursions, avec les infos pratiques pour les enfants (6 ans et 2 ans½).</p>
+  <div id="sync" style="color:var(--stone); font-family:'JetBrains Mono',monospace; font-size:0.78rem; margin:-20px 0 28px;"></div>
 
-  <div class="empty-state">
+  <div class="ajout" id="ajout"></div>
+  <div id="liste"></div>
+
+  <div class="empty-state" style="margin-top:24px;">
     <strong>Autres visites à venir</strong>
     D'autres propositions arriveront une fois l'itinéraire géographique complet défini.
   </div>
-
-  <div class="card" style="margin-bottom:16px;">
-    <h3>Titanic Belfast — Activité phare ⭐</h3>
-    <div class="meta">Titanic Quarter, Belfast · Compter 2h30 à 3h avec le SS Nomadic</div>
-    <p>
-      Musée immersif consacré au paquebot, construit sur son ancien chantier naval : 9 galeries, un Shipyard Ride (petit trajet en télécabine intérieure), et la visite du SS Nomadic à quai. Convient bien aux familles ; les enfants sensibles pourraient être marqués par la partie sur le naufrage, traitée avec retenue.
-    </p>
-    <span class="tag">Réservation en ligne conseillée</span>
-    <span class="tag">Poussettes acceptées</span>
-    <div style="margin-top:12px;">
-      <div class="meta" style="margin-bottom:6px;">Tarifs indicatifs (2026, à confirmer pour 2027)</div>
-      <table style="margin-top:0;">
-        <tbody>
-          <tr><td>Adulte</td><td class="num">à partir de £24,95</td></tr>
-          <tr><td>Enfant 5-15 ans</td><td class="num">à partir de £11</td></tr>
-          <tr><td>Enfant moins de 5 ans</td><td class="num">Gratuit (billet à réserver quand même)</td></tr>
-          <tr><td>Billet famille (2 adultes + 2 enfants)</td><td class="num">à partir de £62</td></tr>
-        </tbody>
-      </table>
-      <p style="color:var(--stone); font-size:0.85rem; margin-top:10px;">
-        Pour votre groupe, prévoir environ <strong>£162</strong> : un billet famille à £62 pour la famille N°1, et 4 billets adulte à £24,95 pour la famille N°2 — à affiner à la réservation. Horaires avril : généralement 8h50-18h00.
-      </p>
-      <p style="margin-top:10px;"><a href="https://www.titanicbelfast.com" target="_blank">Site officiel Titanic Belfast →</a></p>
-    </div>
-  </div>
-
-  <!-- Modèle de carte visite, à dupliquer :
-  <div class="card">
-    <h3>[Nom du site / activité]</h3>
-    <div class="meta">[Ville / région] · [Durée estimée]</div>
-    <p>[Description courte, adapté enfants ou non]</p>
-    <span class="tag">[Ex: Réservation conseillée]</span>
-    <div style="margin-top:12px; display:flex; justify-content:space-between; align-items:center;">
-      <span class="price">[Tarif adulte / enfant] €</span>
-      <a href="[lien officiel]" target="_blank">Plus d'infos →</a>
-    </div>
-  </div>
-  -->
 </main>
+
 
 <div class="columns-divider"></div>
 <footer>Site privé — lien non référencé, à ne partager qu'en famille</footer>
 
+
+<script>
+const ENFANTS = {
+  oui:        {label:"Convient aux enfants",    cls:"t-oui"},
+  non:        {label:"Déconseillé aux enfants", cls:"t-non"},
+  a_verifier: {label:"Enfants : à vérifier",    cls:"t-verif"}
+};
+const RESERVATION = {
+  necessaire: {label:"Réservation nécessaire",    cls:"t-non"},
+  conseillee: {label:"Réservation conseillée",    cls:"t-oui"},
+  non:        {label:"Sans réservation",          cls:"t-verif"},
+  a_verifier: {label:"Réservation : à vérifier",  cls:"t-verif"}
+};
+// Carte d'origine (modifiable ou supprimable sur le site)
+const ORIGINE = [
+  {id:"titanic", nom:"Titanic Belfast — Activité phare ⭐", lieu:"Titanic Quarter, Belfast", lien:"https://www.titanicbelfast.com",
+   duree:"2h30 à 3h avec le SS Nomadic", enfants:"oui", reservation:"conseillee",
+   tarif_adulte:"à partir de £24,95",
+   tarif_enfant:"5-15 ans : dès £11 · moins de 5 ans : gratuit (billet à réserver quand même) · billet famille (2 adultes + 2 enfants) : dès £62",
+   description:"Musée immersif consacré au paquebot, construit sur son ancien chantier naval : 9 galeries, un Shipyard Ride (petit trajet en télécabine intérieure), et la visite du SS Nomadic à quai. Convient bien aux familles ; les enfants sensibles pourraient être marqués par la partie sur le naufrage, traitée avec retenue. Poussettes acceptées.\nPour votre groupe, prévoir environ £162 : un billet famille à £62 pour la famille N°1, et 4 billets adulte à £24,95 pour la famille N°2 — à affiner à la réservation. Tarifs 2026, à confirmer pour 2027. Horaires avril : généralement 8h50-18h00."}
+];
+const CHAMPS = [
+  {cle:"nom", label:"Nom du site / de l'activité", type:"texte", requis:true},
+  {cle:"lieu", label:"Ville / région", type:"texte"},
+  {cle:"lien", label:"Lien officiel", type:"lien"},
+  {cle:"duree", label:"Durée estimée (ex. 2h30)", type:"texte"},
+  {cle:"enfants", label:"Convient aux enfants ?", type:"choix", options:[{v:"a_verifier", l:"À vérifier"}, {v:"oui", l:"Oui"}, {v:"non", l:"Non"}]},
+  {cle:"reservation", label:"Réservation", type:"choix", options:[{v:"a_verifier", l:"À vérifier"}, {v:"necessaire", l:"Nécessaire"}, {v:"conseillee", l:"Conseillée"}, {v:"non", l:"Non nécessaire"}]},
+  {cle:"tarif_adulte", label:"Tarif adulte", type:"texte"},
+  {cle:"tarif_enfant", label:"Tarif enfant", type:"texte"},
+  {cle:"description", label:"Description / note", type:"long"}
+];
+
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+const nl = s => esc(s).replace(/\n/g, "<br>");
+const lienSur = u => /^https?:\/\//i.test(String(u || "").trim()) ? String(u).trim() : "";
+const fmt = n => new Intl.NumberFormat("fr-FR", {style:"currency", currency:"EUR", minimumFractionDigits:0, maximumFractionDigits:2}).format(n);
+
+// Cartes d'origine + modifications de la base (null = carte supprimée)
+function fusionnerListe(origine, data){
+  data = data || {};
+  const m = new Map();
+  origine.forEach((c, i) => m.set(c.id, Object.assign({cree: i}, c)));
+  Object.keys(data).forEach(id => {
+    const d = data[id];
+    if (d === null){ m.delete(id); return; }
+    if (d && typeof d === "object") m.set(id, Object.assign({}, m.get(id) || {}, d, {id}));
+  });
+  return [...m.values()].sort((a, b) => (a.cree || 0) - (b.cree || 0));
+}
+
+let P = null, C = null;
+let mode = "local";
+let editeur = false;
+let donnees = null;
+let statutTemp = "";
+
+const cartes = () => fusionnerListe(ORIGINE, donnees);
+const peutModifier = () => mode === "partage" && editeur && !!C;
+
+function carte(c, edit){
+  const enf = ENFANTS[c.enfants], res = RESERVATION[c.reservation];
+  const lien = lienSur(c.lien);
+  const tarifs = (c.tarif_adulte || c.tarif_enfant)
+    ? '<table style="margin-top:10px;"><tbody>' +
+        (c.tarif_adulte ? '<tr><td>Adulte</td><td class="num">' + esc(c.tarif_adulte) + '</td></tr>' : '') +
+        (c.tarif_enfant ? '<tr><td>Enfant</td><td class="num">' + esc(c.tarif_enfant) + '</td></tr>' : '') +
+      '</tbody></table>' : '';
+  return '<div class="card">' +
+    '<h3>' + esc(c.nom) + '</h3>' +
+    '<div class="meta">' + esc(c.lieu || "") + (c.lieu && c.duree ? ' · ' : '') + (c.duree ? 'Compter ' + esc(c.duree) : '') + '</div>' +
+    (c.description ? '<p>' + nl(c.description) + '</p>' : '') +
+    (enf ? '<span class="tag ' + enf.cls + '">' + enf.label + '</span>' : '') +
+    (res ? '<span class="tag ' + res.cls + '">' + res.label + '</span>' : '') +
+    tarifs +
+    (lien ? '<p style="margin-top:12px;"><a href="' + esc(lien) + '" target="_blank" rel="noopener">Plus d\'infos →</a></p>' : '') +
+    (edit ? '<div class="actions"><button type="button" class="btn" data-act="edit" data-id="' + esc(c.id) + '">Modifier</button><button type="button" class="btn discret" data-act="del" data-id="' + esc(c.id) + '">Supprimer</button></div>' : '') +
+  '</div>';
+}
+
+function majStatut(){
+  let msg = statutTemp;
+  if (!msg){
+    if (mode === "partage") msg = editeur
+      ? (C ? "✏️ Modification activée : chaque changement est enregistré pour toute la famille." : "Le fichier cartes.js n'a pas pu être chargé : modification impossible.")
+      : "● Visites partagées avec la famille. Pour ajouter ou modifier, clique sur « Modifier » (en bas à droite) et entre le code familial.";
+    else msg = "Valeurs d'origine du site (la base partagée n'est pas joignable : modifications impossibles).";
+  }
+  document.getElementById("sync").textContent = msg;
+}
+
+function afficher(){
+  const edit = peutModifier();
+  const liste = cartes();
+  document.getElementById("liste").innerHTML = liste.map(c => carte(c, edit)).join("");
+  document.getElementById("ajout").innerHTML = edit ? '<button type="button" class="btn" data-act="add">+ Ajouter une visite</button>' : "";
+  majStatut();
+}
+
+async function ecrire(id, valeur){
+  const avant = donnees ? donnees[id] : undefined;
+  donnees = Object.assign({}, donnees || {}); donnees[id] = valeur;
+  afficher();
+  try{ await P.fusionner("visites", {[id]: valeur}); statutTemp = ""; majStatut(); }
+  catch(err){
+    if (avant === undefined) delete donnees[id]; else donnees[id] = avant;
+    statutTemp = "Enregistrement impossible : réessaie dans un instant."; afficher();
+  }
+}
+function supprimer(id){ return ecrire(id, null); }
+
+function ouvrir(c){
+  const nouveau = !c.id;
+  C.ouvrirFormulaire({
+    titre: nouveau ? "Ajouter une visite" : "Modifier la visite",
+    champs: CHAMPS,
+    valeurs: nouveau ? {enfants: "a_verifier", reservation: "a_verifier"} : c,
+    onValider: v => ecrire(nouveau ? C.nouvelId() : c.id, Object.assign({}, v, {cree: nouveau ? Date.now() : (c.cree || 0)})),
+    onSupprimer: nouveau ? null : () => supprimer(c.id)
+  });
+}
+
+document.addEventListener("click", e => {
+  const b = e.target.closest && e.target.closest("[data-act]");
+  if (!b || !peutModifier()) return;
+  if (b.dataset.act === "add") return ouvrir({});
+  const c = cartes().find(x => x.id === b.dataset.id); if (!c) return;
+  if (b.dataset.act === "edit") ouvrir(c);
+  else if (b.dataset.act === "del" && window.confirm("Supprimer définitivement « " + (c.nom || "cette visite") + " » ?")) supprimer(c.id);
+});
+
+afficher();
+
+// Connexion à la base en ligne (si elle n'est pas joignable, la page affiche les cartes d'origine)
+(async function demarrer(){
+  try{
+    P = await import("./partage.js?v=6");
+    if (!(await P.connecter())) throw new Error("connexion impossible");
+    try{ C = await import("./cartes.js?v=6"); }catch(e){ C = null; }
+    editeur = P.estEditeur();
+    P.installerBarre(ed => { editeur = ed; afficher(); });
+    mode = "partage";
+    document.getElementById("sync").textContent = "Connexion aux visites partagées…";
+    P.ecouter("visites", (data, deCache) => {
+      donnees = data; afficher();
+      if (deCache) document.getElementById("sync").textContent = "○ Dernières données reçues (en attente de connexion).";
+    }, err => {
+      mode = "local"; donnees = null;
+      statutTemp = "Visites partagées indisponibles (" + (err && err.code ? err.code : "erreur") + ") : cartes d'origine affichées.";
+      afficher();
+    });
+  }catch(e){
+    mode = "local"; afficher();
+  }
+})();
+</script>
 </body>
 </html>
