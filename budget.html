@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
 <title>Budget — Irlande du Nord</title>
-<link rel="stylesheet" href="css/style.css?v=4">
+<link rel="stylesheet" href="css/style.css?v=5">
 <style>
   .table-wrap{overflow-x:auto;}
   .table-wrap table{min-width:680px;}
@@ -16,6 +16,10 @@
   .tag.st-achiffrer{color:var(--stone); border-color:var(--stone);}
   .tag.st-hypothese{color:var(--stone); border-color:var(--stone); border-style:dashed;}
   td.num.grey{color:var(--stone);}
+  .in-prix, .in-taux, .in-statut{font:inherit; background:var(--basalt); color:var(--fog); border:1px solid var(--stone); border-radius:var(--radius); padding:4px 8px;}
+  .in-prix, .in-taux{width:90px;}
+  .in-statut{max-width:150px;}
+  .edit-line{display:block; margin-top:6px;}
 </style>
 </head>
 <body>
@@ -47,7 +51,8 @@
     <div class="stat"><span class="num" id="s-f2">—</span><span class="label">Famille N°2</span></div>
     <div class="stat"><span class="num" id="s-pp">—</span><span class="label">Par personne (8)</span></div>
   </div>
-  <div id="infos" style="margin-bottom:28px;"></div>
+  <div id="infos" style="margin-bottom:12px;"></div>
+  <div id="sync" style="color:var(--stone); font-family:'JetBrains Mono',monospace; font-size:0.78rem; margin-bottom:28px;"></div>
 
   <div class="table-wrap">
     <table>
@@ -90,35 +95,37 @@
 const TAUX_LIVRE = 1.15; // 1 £ = 1,15 € (indicatif, à ajuster)
 
 const LIGNES = [
-  {cat:"Transport", poste:"Vols Toulouse ↔ Dublin", detail:"Aer Lingus, aller-retour, départ groupé", unite:"par personne", prix:null, devise:"EUR", q1:4, q2:4, statut:"a_chiffrer",
+  {id:"vols", cat:"Transport", poste:"Vols Toulouse ↔ Dublin", detail:"Aer Lingus, aller-retour, départ groupé", unite:"par personne", prix:null, devise:"EUR", q1:4, q2:4, statut:"a_chiffrer",
    note:"Fourchette observée : ~48 à 150 € l'A/R par personne (indicatif).", lien:"https://www.aerlingus.com/fr-fr/", lienTexte:"Aer Lingus →"},
-  {cat:"Transport", poste:"Location de voiture à Dublin", detail:"Une voiture par famille, du 11 au 16 avril", unite:"par voiture", prix:null, devise:"EUR", q1:1, q2:1, statut:"a_chiffrer"},
-  {cat:"Transport", poste:"Parking aéroport de Toulouse", detail:"Parking P6, 6 jours (11 → 16 avril)", unite:"par voiture", prix:65, devise:"EUR", q1:1, q2:1, statut:"estime"},
+  {id:"voiture", cat:"Transport", poste:"Location de voiture à Dublin", detail:"Une voiture par famille, du 11 au 16 avril", unite:"par voiture", prix:null, devise:"EUR", q1:1, q2:1, statut:"a_chiffrer"},
+  {id:"parking", cat:"Transport", poste:"Parking aéroport de Toulouse", detail:"Parking P6, 6 jours (11 → 16 avril)", unite:"par voiture", prix:65, devise:"EUR", q1:1, q2:1, statut:"estime"},
 
-  {cat:"Hébergement", poste:"Logement Belfast", detail:"4 nuits (11 → 15 avril), coût total partagé", unite:"au total", prix:null, devise:"EUR", q1:0.5, q2:0.5, statut:"a_chiffrer",
+  {id:"logement_belfast", cat:"Hébergement", poste:"Logement Belfast", detail:"4 nuits (11 → 15 avril), coût total partagé", unite:"au total", prix:null, devise:"EUR", q1:0.5, q2:0.5, statut:"a_chiffrer",
    note:"Grande maison : 150 à 350 €/nuit (indicatif). Formule à décider : une maison pour tous ou deux logements."},
-  {cat:"Hébergement", poste:"Logement Dublin", detail:"1 nuit (15 avril), coût total partagé", unite:"au total", prix:null, devise:"EUR", q1:0.5, q2:0.5, statut:"a_chiffrer",
+  {id:"logement_dublin", cat:"Hébergement", poste:"Logement Dublin", detail:"1 nuit (15 avril), coût total partagé", unite:"au total", prix:null, devise:"EUR", q1:0.5, q2:0.5, statut:"a_chiffrer",
    note:"150 à 210 €/nuit (indicatif)."},
 
-  {cat:"Visites", poste:"Titanic Belfast, famille N°1", detail:"Billet famille (2 adultes + 2 enfants)", unite:"billet famille", prix:62, devise:"GBP", q1:1, q2:0, statut:"estime",
+  {id:"titanic_f1", cat:"Visites", poste:"Titanic Belfast, famille N°1", detail:"Billet famille (2 adultes + 2 enfants)", unite:"billet famille", prix:62, devise:"GBP", q1:1, q2:0, statut:"estime",
    note:"Tarif « à partir de » 2026, à reconfirmer pour 2027."},
-  {cat:"Visites", poste:"Titanic Belfast, famille N°2", detail:"4 billets adulte (la nièce a 16 ans)", unite:"par billet", prix:24.95, devise:"GBP", q1:0, q2:4, statut:"estime",
+  {id:"titanic_f2", cat:"Visites", poste:"Titanic Belfast, famille N°2", detail:"4 billets adulte (la nièce a 16 ans)", unite:"par billet", prix:24.95, devise:"GBP", q1:0, q2:4, statut:"estime",
    note:"Tarif « à partir de » 2026, à reconfirmer pour 2027."},
 
-  {cat:"Démarches", poste:"Passeport adulte, famille N°1", detail:"Renouvellement : demande lancée, à récupérer", unite:"par passeport", prix:86, devise:"EUR", q1:1, q2:0, statut:"reserve"},
-  {cat:"Démarches", poste:"Passeports enfants, famille N°1", detail:"Moins de 15 ans : demande lancée, à récupérer", unite:"par passeport", prix:17, devise:"EUR", q1:2, q2:0, statut:"reserve"},
-  {cat:"Démarches", poste:"Passeports adultes, famille N°2", detail:"Seulement si un renouvellement est nécessaire", unite:"par passeport", prix:86, devise:"EUR", q1:0, q2:3, statut:"hypothese"},
-  {cat:"Démarches", poste:"Passeport ado (16 ans), famille N°2", detail:"Seulement si un renouvellement est nécessaire", unite:"par passeport", prix:42, devise:"EUR", q1:0, q2:1, statut:"hypothese",
+  {id:"passeport_adulte_f1", cat:"Démarches", poste:"Passeport adulte, famille N°1", detail:"Renouvellement : demande lancée, à récupérer", unite:"par passeport", prix:86, devise:"EUR", q1:1, q2:0, statut:"reserve"},
+  {id:"passeports_enfants_f1", cat:"Démarches", poste:"Passeports enfants, famille N°1", detail:"Moins de 15 ans : demande lancée, à récupérer", unite:"par passeport", prix:17, devise:"EUR", q1:2, q2:0, statut:"reserve"},
+  {id:"passeports_adultes_f2", cat:"Démarches", poste:"Passeports adultes, famille N°2", detail:"Seulement si un renouvellement est nécessaire", unite:"par passeport", prix:86, devise:"EUR", q1:0, q2:3, statut:"hypothese"},
+  {id:"passeport_ado_f2", cat:"Démarches", poste:"Passeport ado (16 ans), famille N°2", detail:"Seulement si un renouvellement est nécessaire", unite:"par passeport", prix:42, devise:"EUR", q1:0, q2:1, statut:"hypothese",
    note:"Tarif mineur de 15 ans et plus, à confirmer sur Service-Public."},
-  {cat:"Démarches", poste:"ETA (autorisation de voyage UK)", detail:"Obligatoire pour les 8 voyageurs, à demander une fois les nouveaux passeports en main", unite:"par personne", prix:23, devise:"EUR", q1:4, q2:4, statut:"estime",
+  {id:"eta", cat:"Démarches", poste:"ETA (autorisation de voyage UK)", detail:"Obligatoire pour les 8 voyageurs, à demander une fois les nouveaux passeports en main", unite:"par personne", prix:23, devise:"EUR", q1:4, q2:4, statut:"estime",
    note:"Environ £20 par personne."},
-  {cat:"Démarches", poste:"Assurance voyage / santé", detail:"La CEAM ne couvre pas le Royaume-Uni", unite:"par famille", prix:null, devise:"EUR", q1:1, q2:1, statut:"a_chiffrer",
+  {id:"assurance", cat:"Démarches", poste:"Assurance voyage / santé", detail:"La CEAM ne couvre pas le Royaume-Uni", unite:"par famille", prix:null, devise:"EUR", q1:1, q2:1, statut:"a_chiffrer",
    note:"Souvent incluse avec certaines cartes bancaires : à vérifier."},
 
-  {cat:"Sur place", poste:"Repas, carburant, divers", detail:"Budget libre pour le séjour", unite:"par famille", prix:null, devise:"EUR", q1:1, q2:1, statut:"a_chiffrer"}
+  {id:"sur_place", cat:"Sur place", poste:"Repas, carburant, divers", detail:"Budget libre pour le séjour", unite:"par famille", prix:null, devise:"EUR", q1:1, q2:1, statut:"a_chiffrer"}
 ];
 // ======================================================================
 //  Fin des chiffres. Ci-dessous : le calcul et l'affichage (ne pas toucher).
+//  Les tarifs et statuts modifiés sur le site (mode « Modifier ») sont
+//  enregistrés dans la base partagée : ils remplacent les valeurs ci-dessus.
 // ======================================================================
 
 const STATUTS = {
@@ -127,15 +134,37 @@ const STATUTS = {
   a_chiffrer: {label:"À chiffrer",     cls:"st-achiffrer"},
   hypothese:  {label:"Hypothèse",      cls:"st-hypothese"}
 };
+let taux = TAUX_LIVRE;
+LIGNES.forEach(l => { l.defPrix = l.prix; l.defStatut = l.statut; });
+
+let P = null;            // le module partage.js, une fois chargé
+let mode = "local";      // "local" = valeurs du site | "partage" = base en ligne
+let editeur = false;     // code familial saisi ?
+let statutTemp = "";     // message ponctuel (erreur d'enregistrement…)
+let renduEnAttente = false;
+
 const fmt = n => new Intl.NumberFormat("fr-FR", {style:"currency", currency:"EUR", maximumFractionDigits:0}).format(Math.round(n));
 const fmtUnit = (prix, devise) => devise === "GBP"
   ? "£" + String(prix).replace(".", ",")
   : new Intl.NumberFormat("fr-FR", {style:"currency", currency:"EUR", maximumFractionDigits:2}).format(prix);
 
+// Applique les données de la base (ou les valeurs d'origine si data est vide)
+function appliquer(data){
+  data = data || {};
+  LIGNES.forEach(l => {
+    const d = data[l.id];
+    if (d && typeof d === "object" && "prix" in d){
+      l.prix = (d.prix === null || d.prix === undefined) ? null : Number(d.prix);
+      l.statut = STATUTS[d.statut] ? d.statut : l.defStatut;
+    } else { l.prix = l.defPrix; l.statut = l.defStatut; }
+  });
+  taux = (typeof data._taux === "number" && data._taux > 0) ? data._taux : TAUX_LIVRE;
+}
+
 function calculer(){
   const r = {t1:0, t2:0, paye:0, hypo:0, manque:[]};
   LIGNES.forEach(l => {
-    const unit = (l.prix === null) ? null : l.prix * (l.devise === "GBP" ? TAUX_LIVRE : 1);
+    const unit = (l.prix === null) ? null : l.prix * (l.devise === "GBP" ? taux : 1);
     l.e1 = (unit === null) ? null : unit * l.q1;
     l.e2 = (unit === null) ? null : unit * l.q2;
     if (unit === null || l.statut === "a_chiffrer"){
@@ -155,8 +184,26 @@ function detailCalcul(l){
   return fmtUnit(l.prix, l.devise) + " × " + (l.q1 + l.q2) + " (" + l.unite + ")";
 }
 
+const enSaisie = () => { const a = document.activeElement; return !!(a && a.matches && a.matches(".in-prix, .in-statut, .in-taux")); };
+const montantTexte = v => (v === null || v === undefined) ? "" : String(v).replace(".", ",");
+
+function majStatut(){
+  let msg = statutTemp;
+  if (!msg){
+    if (mode === "partage") msg = editeur
+      ? "✏️ Modification activée : chaque changement est enregistré pour toute la famille."
+      : "● Tarifs partagés avec la famille. Pour modifier, clique sur « Modifier » (en bas à droite) et entre le code familial.";
+    else msg = "Valeurs d'origine du site (la base partagée n'est pas joignable : modifications impossibles).";
+  }
+  document.getElementById("sync").textContent = msg;
+}
+
 function afficher(){
   const r = calculer();
+  const edit = (mode === "partage" && editeur);
+  const a = document.activeElement;
+  const memo = (a && a.dataset && a.dataset.id && a.matches(".in-prix, .in-statut, .in-taux")) ? {id:a.dataset.id, cls:[...a.classList].find(c => c.startsWith("in-"))} : null;
+
   const cell = (v, q, grey) => (v === null || q === 0) ? '<td class="num grey">—</td>' : '<td class="num' + (grey ? ' grey' : '') + '">' + (grey ? '(' + fmt(v) + ')' : fmt(v)) + '</td>';
   let html = "", cat = "";
   LIGNES.forEach(l => {
@@ -165,10 +212,14 @@ function afficher(){
     const grey = (l.statut === "hypothese");
     const tot = (l.e1 === null) ? null : l.e1 + l.e2;
     const calc = detailCalcul(l);
+    const champPrix = edit ? '<label class="small edit-line">Tarif (' + l.unite + ') <input class="in-prix" data-id="' + l.id + '" inputmode="decimal" autocomplete="off" value="' + montantTexte(l.prix) + '" aria-label="Tarif : ' + l.poste + '"> ' + (l.devise === "GBP" ? "£" : "€") + '</label>' : '';
+    const celluleStatut = edit
+      ? '<td><select class="in-statut" data-id="' + l.id + '" aria-label="Statut : ' + l.poste + '">' + Object.keys(STATUTS).map(k => '<option value="' + k + '"' + (k === l.statut ? ' selected' : '') + '>' + STATUTS[k].label + '</option>').join("") + '</select></td>'
+      : '<td><span class="tag ' + st.cls + '">' + st.label + '</span></td>';
     html += '<tr><td><strong>' + l.poste + '</strong><br><span class="small">' + l.detail + (calc ? ' · ' + calc : '') + '</span>' +
             (l.note ? '<br><span class="small">' + l.note + '</span>' : '') +
-            (l.lien ? '<br><span class="small"><a href="' + l.lien + '" target="_blank">' + l.lienTexte + '</a></span>' : '') + '</td>' +
-            '<td><span class="tag ' + st.cls + '">' + st.label + '</span></td>' +
+            (l.lien ? '<br><span class="small"><a href="' + l.lien + '" target="_blank">' + l.lienTexte + '</a></span>' : '') +
+            champPrix + '</td>' + celluleStatut +
             cell(l.e1, l.q1, grey) + cell(l.e2, l.q2, grey) + cell(tot, 1, grey) + '</tr>';
   });
   document.getElementById("lignes").innerHTML = html;
@@ -183,10 +234,90 @@ function afficher(){
   if (r.manque.length) infos += '<p style="margin:0 0 6px; color:var(--amber);">Total partiel : pas encore chiffré → ' + r.manque.join(", ") + '.</p>';
   if (r.hypo > 0) infos += '<p class="small" style="margin:0 0 6px;">Non compté (hypothèse) : passeports de la famille N°2, environ ' + fmt(r.hypo) + ' si un renouvellement est nécessaire.</p>';
   infos += '<p class="small" style="margin:0 0 6px;">Dont déjà payé ou réservé : ' + fmt(r.paye) + '.</p>';
-  infos += '<p class="small" style="margin:0;">Livres converties en euros à 1 £ = ' + String(TAUX_LIVRE).replace(".", ",") + ' € (taux indicatif).</p>';
+  infos += edit
+    ? '<p class="small" style="margin:0;">Livres converties en euros à 1 £ = <input class="in-taux" data-id="_taux" inputmode="decimal" autocomplete="off" value="' + montantTexte(taux) + '" aria-label="Taux livre en euro"> € (taux indicatif).</p>'
+    : '<p class="small" style="margin:0;">Livres converties en euros à 1 £ = ' + String(taux).replace(".", ",") + ' € (taux indicatif).</p>';
   document.getElementById("infos").innerHTML = infos;
+  majStatut();
+
+  if (memo){
+    const n = document.querySelector('[data-id="' + memo.id + '"].' + memo.cls);
+    if (n) n.focus();
+  }
 }
+
+// Lecture d'un montant saisi : accepte « 24,95 », « 24.95 », « £ 24 ». Vide = null.
+function lireMontant(txt){
+  const t = String(txt).trim().replace(",", ".").replace(/[£€\s]/g, "");
+  if (t === "") return {vide:true};
+  const n = Number(t);
+  return (isFinite(n) && n >= 0) ? {n} : {invalide:true};
+}
+
+async function enregistrer(patch, annuler){
+  try{ await P.fusionner("budget", patch); statutTemp = ""; majStatut(); }
+  catch(err){ annuler(); statutTemp = "Enregistrement impossible : réessaie dans un instant."; afficher(); }
+}
+
+function modifier(id, champ, brut){
+  if (!(mode === "partage" && editeur)) return;
+  statutTemp = "";
+  if (id === "_taux"){
+    const m = lireMontant(brut);
+    if (m.vide || m.invalide || m.n <= 0){ statutTemp = "Taux invalide : entre un nombre positif (ex. 1,15)."; afficher(); return; }
+    const avant = taux; taux = m.n; setTimeout(afficher, 0);
+    enregistrer({_taux: m.n}, () => { taux = avant; });
+    return;
+  }
+  const l = LIGNES.find(x => x.id === id); if (!l) return;
+  const avant = {prix:l.prix, statut:l.statut};
+  if (champ === "prix"){
+    const m = lireMontant(brut);
+    if (m.invalide){ statutTemp = "Montant invalide : entre un nombre (ex. 24,95)."; afficher(); return; }
+    if (m.vide){ l.prix = null; l.statut = "a_chiffrer"; }
+    else { l.prix = m.n; if (l.statut === "a_chiffrer") l.statut = "estime"; }
+  } else if (STATUTS[brut]){ l.statut = brut; }
+  else return;
+  setTimeout(afficher, 0);
+  enregistrer({[id]: {prix:l.prix, statut:l.statut}}, () => { l.prix = avant.prix; l.statut = avant.statut; });
+}
+
+document.addEventListener("change", e => {
+  const t = e.target;
+  if (!t.matches || !t.matches(".in-prix, .in-statut, .in-taux")) return;
+  modifier(t.dataset.id, t.classList.contains("in-statut") ? "statut" : "prix", t.value);
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "Enter" && e.target.matches && e.target.matches(".in-prix, .in-taux")) e.target.blur();
+});
+document.addEventListener("focusout", () => {
+  setTimeout(() => { if (renduEnAttente && !enSaisie()){ renduEnAttente = false; afficher(); } }, 0);
+});
+
 afficher();
+
+// Connexion à la base en ligne (si elle n'est pas joignable, la page affiche les valeurs d'origine)
+(async function demarrer(){
+  try{
+    P = await import("./partage.js?v=5");
+    if (!(await P.connecter())) throw new Error("connexion impossible");
+    editeur = P.estEditeur();
+    P.installerBarre(ed => { editeur = ed; afficher(); });
+    mode = "partage";
+    document.getElementById("sync").textContent = "Connexion aux tarifs partagés…";
+    P.ecouter("budget", (data, deCache) => {
+      appliquer(data);
+      if (enSaisie()) renduEnAttente = true; else afficher();
+      if (deCache) document.getElementById("sync").textContent = "○ Dernières données reçues (en attente de connexion).";
+    }, err => {
+      mode = "local"; appliquer(null);
+      statutTemp = "Tarifs partagés indisponibles (" + (err && err.code ? err.code : "erreur") + ") : valeurs d'origine du site affichées.";
+      afficher();
+    });
+  }catch(e){
+    mode = "local"; afficher();
+  }
+})();
 </script>
 </body>
 </html>
