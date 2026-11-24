@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
 <title>Logements — Irlande du Nord</title>
-<link rel="stylesheet" href="css/style.css?v=6">
+<link rel="stylesheet" href="css/style.css?v=7">
 <style>
   .etape{margin-bottom:40px;}
   .etape h2{font-size:1.3rem; margin-bottom:4px;}
@@ -192,9 +192,9 @@ afficher();
 // Connexion à la base en ligne
 (async function demarrer(){
   try{
-    P = await import("./partage.js?v=6");
+    P = await import("./partage.js?v=7");
     if (!(await P.connecter())) throw new Error("connexion impossible");
-    try{ C = await import("./cartes.js?v=6"); }catch(e){ C = null; }
+    try{ C = await import("./cartes.js?v=7"); }catch(e){ C = null; }
     editeur = P.estEditeur();
     P.installerBarre(ed => { editeur = ed; afficher(); });
     mode = "partage";

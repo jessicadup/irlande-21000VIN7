@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
 <title>Budget — Irlande du Nord</title>
-<link rel="stylesheet" href="css/style.css?v=6">
+<link rel="stylesheet" href="css/style.css?v=7">
 <style>
   .table-wrap{overflow-x:auto;}
   .table-wrap table{min-width:680px;}
@@ -323,7 +323,7 @@ afficher();
 // Connexion à la base en ligne (si elle n'est pas joignable, la page affiche les valeurs d'origine)
 (async function demarrer(){
   try{
-    P = await import("./partage.js?v=6");
+    P = await import("./partage.js?v=7");
     if (!(await P.connecter())) throw new Error("connexion impossible");
     editeur = P.estEditeur();
     P.installerBarre(ed => { editeur = ed; afficher(); });

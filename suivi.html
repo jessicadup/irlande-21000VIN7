@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
 <title>Suivi des tâches — Irlande du Nord</title>
-<link rel="stylesheet" href="css/style.css?v=6">
+<link rel="stylesheet" href="css/style.css?v=7">
 <style>.task-row input:disabled{cursor:not-allowed; opacity:0.55;}</style>
 </head>
 <body>
@@ -118,7 +118,7 @@ render();
 // Connexion à la base en ligne (si elle n'est pas joignable, la page marche comme avant, sur cet appareil)
 (async function demarrer(){
   try{
-    P = await import("./partage.js?v=6");
+    P = await import("./partage.js?v=7");
     if (!(await P.connecter())) throw new Error("connexion impossible");
     editeur = P.estEditeur();
     P.installerBarre(ed => { editeur = ed; render(); });

@@ -5,7 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
 <title>Feuille de route — Irlande du Nord</title>
-<link rel="stylesheet" href="css/style.css?v=6">
+<link rel="stylesheet" href="css/style.css?v=7">
+<style>
+  .small{color:var(--stone); font-size:0.82rem;}
+  .tag.st-areserver{color:var(--amber); border-color:var(--amber);}
+  .tag.st-reserve{color:var(--sea); border-color:var(--sea);}
+  .btn{font:inherit; cursor:pointer; border-radius:var(--radius); padding:6px 12px; border:1px solid var(--amber); background:transparent; color:var(--amber);}
+  .btn:hover{background:var(--amber); color:var(--basalt);}
+  .btn.discret{border-color:var(--stone); color:var(--stone);}
+  .actions{margin-top:14px; display:flex; gap:8px; flex-wrap:wrap;}
+  .ajout{margin-top:14px;}
+  .ajout-infos{margin:0 0 32px;}
+</style>
 </head>
 <body>
 
@@ -29,99 +40,249 @@
   <span class="page-kicker">Jour par jour</span>
   <h1 class="page-title">Feuille de route</h1>
   <p class="page-lede">Le planning complet du séjour, du 11 au 16 avril 2027.</p>
+  <div id="sync" style="color:var(--stone); font-family:'JetBrains Mono',monospace; font-size:0.78rem; margin:-20px 0 28px;"></div>
 
-  <div class="card" style="margin-bottom:16px;">
-    <h3>Vacances scolaires — Zone C</h3>
-    <div class="meta">Toulouse et Montpellier sont dans la même zone : mêmes dates pour les deux familles</div>
-    <p style="margin:0;">Vacances de printemps : <span class="price">du samedi 3 avril au lundi 19 avril 2027</span></p>
-  </div>
+  <div id="infos"></div>
+  <div class="ajout ajout-infos" id="ajout-infos"></div>
 
-  <div class="card" style="margin-bottom:16px;">
-    <h3>À savoir sur place pendant votre séjour</h3>
-    <div class="meta">Événements repérés à Dublin, Belfast et alentours (vérifié en novembre 2026)</div>
-    <p style="margin:0;">
-      <strong>Great Ireland Run</strong> — dimanche 11 avril 2027, Phoenix Park, Dublin. Départ le matin (9h) : la course sera terminée à votre atterrissage (15h10). Aucun impact.<br><br>
-      <strong>Dublin, 15 et 16 avril</strong> — aucun grand concert, match ni salon repéré à ce jour qui pèse sur votre nuit à Dublin.<br><br>
-      <strong>Belfast et alentours, 11 → 16 avril</strong> — rien de gênant repéré. À noter autour de votre séjour : un trail à Portrush le samedi 10 avril (la veille de votre arrivée), et un grand congrès de neurosciences à l'ICC Belfast du 25 au 28 avril (après votre départ).<br><br>
-      <strong>Belfast City Marathon</strong> — début mai, après votre séjour.
-    </p>
-    <p style="margin-top:12px; color:var(--stone); font-size:0.88rem;">
-      Les programmes de printemps 2027 (festivals, concerts) ne sont pas tous publiés : à revérifier en mars 2027.
-    </p>
-  </div>
-
-  <div class="day-block">
-    <h3>Dimanche 11 avril</h3>
-    <div class="card">
-      <h3>Vol Toulouse → Dublin puis route vers Belfast</h3>
-      <div class="meta">Départ 13h50 — Arrivée à Dublin 15h10, puis ~2h de route jusqu'à Belfast</div>
-      <p style="margin:8px 0;">Départ groupé de Toulouse pour les deux familles.</p>
-      <p style="margin-top:8px;"><a href="https://www.aerlingus.com/fr-fr/" target="_blank">Réserver sur Aer Lingus →</a></p>
-      <p>Installation au logement de Belfast en fin de journée.</p>
-    </div>
-  </div>
-
-  <div class="day-block">
-    <h3>Lundi 12 avril</h3>
-    <div class="card">
-      <h3>Titanic Belfast — l'expérience totale ⭐</h3>
-      <div class="meta">Activité phare — compter 2h30 à 3h avec le SS Nomadic</div>
-      <p>Visite complète du musée, sans rien sauter.</p>
-    </div>
-  </div>
-
-  <div class="day-block">
-    <h3>Mardi 13 avril</h3>
-    <div class="card">
-      <h3>Causeway Coast</h3>
-      <div class="meta">~1h30 de route aller, autant au retour</div>
-      <p>Chaussée des Géants, à combiner avec le Château de Dunluce et/ou Dark Hedges selon le temps disponible.</p>
-      <p style="margin-top:8px; color:var(--stone); font-size:0.88rem;">Giant's Causeway : réservation en ligne fortement conseillée à l'avance (National Trust). Même principe pour Carrick-a-Rede si vous l'ajoutez : billets à créneaux horaires.</p>
-    </div>
-  </div>
-
-  <div class="day-block">
-    <h3>Mercredi 14 avril</h3>
-    <div class="card">
-      <h3>Journée libre</h3>
-      <div class="meta">Rien de prévu à l'avance</div>
-      <p>Décision sur place selon l'envie du groupe et l'énergie des enfants.</p>
-    </div>
-  </div>
-
-  <div class="day-block">
-    <h3>Jeudi 15 avril</h3>
-    <div class="card">
-      <h3>Route vers Dublin + nuit sur place</h3>
-      <div class="meta">~2h de route</div>
-      <p>Journée et soirée à Dublin, nuit sur place pour faciliter le vol du lendemain matin. Logement à rechercher séparément de celui de Belfast.</p>
-    </div>
-  </div>
-
-  <div class="day-block">
-    <h3>Vendredi 16 avril</h3>
-    <div class="card">
-      <h3>Vol retour Dublin → Toulouse</h3>
-      <div class="meta">Départ 09h55 — Arrivée Toulouse 13h10 — arriver à l'aéroport 2h avant</div>
-      <p style="margin:0;">Vol retour groupé pour les deux familles.</p>
-      <p style="margin-top:8px; color:var(--stone); font-size:0.88rem;">Prévoir la réservation du parking aéroport (voir Budget).</p>
-    </div>
-  </div>
-
-  <!-- Modèle pour un jour, à dupliquer une fois les dates connues :
-  <div class="day-block">
-    <h3>Jour 1 — [date]</h3>
-    <div class="card">
-      <h3>[Titre de l'étape]</h3>
-      <div class="meta">[Horaire] · [Lieu]</div>
-      <p>[Détails]</p>
-    </div>
-  </div>
-  -->
+  <div id="jours"></div>
 </main>
+
 
 <div class="columns-divider"></div>
 <footer>Site privé — lien non référencé, à ne partager qu'en famille</footer>
 
+
+<script>
+const JOURS = [{"id": "j11", "titre": "Dimanche 11 avril"}, {"id": "j12", "titre": "Lundi 12 avril"}, {"id": "j13", "titre": "Mardi 13 avril"}, {"id": "j14", "titre": "Mercredi 14 avril"}, {"id": "j15", "titre": "Jeudi 15 avril"}, {"id": "j16", "titre": "Vendredi 16 avril"}];
+const STATUTS = {
+  a_reserver: {label:"À réserver", cls:"st-areserver"},
+  reserve:    {label:"Réservé",    cls:"st-reserve"}
+};
+// Cartes d'origine (modifiables ou supprimables sur le site)
+const ORIGINE = [
+ {
+  "id": "vacances",
+  "jour": "info",
+  "titre": "Vacances scolaires — Zone C",
+  "meta": "Toulouse et Montpellier sont dans la même zone : mêmes dates pour les deux familles",
+  "details": "Vacances de printemps : **du samedi 3 avril au lundi 19 avril 2027**"
+ },
+ {
+  "id": "evenements",
+  "jour": "info",
+  "titre": "À savoir sur place pendant votre séjour",
+  "meta": "Événements repérés à Dublin, Belfast et alentours (vérifié en novembre 2026)",
+  "details": "**Great Ireland Run** — dimanche 11 avril 2027, Phoenix Park, Dublin. Départ le matin (9h) : la course sera terminée à votre atterrissage (15h10). Aucun impact.\n\n**Dublin, 15 et 16 avril** — aucun grand concert, match ni salon repéré à ce jour qui pèse sur votre nuit à Dublin.\n\n**Belfast et alentours, 11 → 16 avril** — rien de gênant repéré. À noter autour de votre séjour : un trail à Portrush le samedi 10 avril (la veille de votre arrivée), et un grand congrès de neurosciences à l'ICC Belfast du 25 au 28 avril (après votre départ).\n\n**Belfast City Marathon** — début mai, après votre séjour.",
+  "note": "Les programmes de printemps 2027 (festivals, concerts) ne sont pas tous publiés : à revérifier en mars 2027."
+ },
+ {
+  "id": "vol_aller",
+  "jour": "j11",
+  "titre": "Vol Toulouse → Dublin puis route vers Belfast",
+  "meta": "Départ 13h50 — Arrivée à Dublin 15h10, puis ~2h de route jusqu'à Belfast",
+  "details": "Départ groupé de Toulouse pour les deux familles.\nInstallation au logement de Belfast en fin de journée.",
+  "lien": "https://www.aerlingus.com/fr-fr/",
+  "lien_texte": "Réserver sur Aer Lingus",
+  "statut": "a_reserver"
+ },
+ {
+  "id": "titanic",
+  "jour": "j12",
+  "titre": "Titanic Belfast — l'expérience totale ⭐",
+  "meta": "Activité phare — compter 2h30 à 3h avec le SS Nomadic",
+  "details": "Visite complète du musée, sans rien sauter.",
+  "statut": "a_reserver"
+ },
+ {
+  "id": "causeway",
+  "jour": "j13",
+  "titre": "Causeway Coast",
+  "meta": "~1h30 de route aller, autant au retour",
+  "details": "Chaussée des Géants, à combiner avec le Château de Dunluce et/ou Dark Hedges selon le temps disponible.",
+  "note": "Giant's Causeway : réservation en ligne fortement conseillée à l'avance (National Trust). Même principe pour Carrick-a-Rede si vous l'ajoutez : billets à créneaux horaires.",
+  "statut": "a_reserver"
+ },
+ {
+  "id": "libre",
+  "jour": "j14",
+  "titre": "Journée libre",
+  "meta": "Rien de prévu à l'avance",
+  "details": "Décision sur place selon l'envie du groupe et l'énergie des enfants.",
+  "statut": "aucun"
+ },
+ {
+  "id": "route_dublin",
+  "jour": "j15",
+  "titre": "Route vers Dublin + nuit sur place",
+  "meta": "~2h de route",
+  "details": "Journée et soirée à Dublin, nuit sur place pour faciliter le vol du lendemain matin. Logement à rechercher séparément de celui de Belfast.",
+  "statut": "aucun"
+ },
+ {
+  "id": "vol_retour",
+  "jour": "j16",
+  "titre": "Vol retour Dublin → Toulouse",
+  "meta": "Départ 09h55 — Arrivée Toulouse 13h10 — arriver à l'aéroport 2h avant",
+  "details": "Vol retour groupé pour les deux familles.",
+  "note": "Prévoir la réservation du parking aéroport (voir Budget).",
+  "statut": "a_reserver"
+ }
+];
+const AIDE_TEXTE = "Astuce : entoure un mot de ** ** pour le mettre en gras. Une ligne vide = nouveau paragraphe.";
+const CHAMPS_ETAPE = [
+  {cle:"jour", label:"Jour", type:"choix", requis:true, options: JOURS.map(j => ({v:j.id, l:j.titre}))},
+  {cle:"titre", label:"Titre de l'étape", type:"texte", requis:true},
+  {cle:"meta", label:"Horaire ou lieu", type:"texte"},
+  {cle:"details", label:"Détails", type:"long", aide:AIDE_TEXTE},
+  {cle:"lien", label:"Lien (réservation, site officiel)", type:"lien"},
+  {cle:"lien_texte", label:"Texte du lien (ex. Réserver sur Aer Lingus)", type:"texte"},
+  {cle:"note", label:"Note en petit (conseil, rappel)", type:"long"},
+  {cle:"statut", label:"Statut", type:"choix", options:[{v:"aucun", l:"Rien à réserver"}, {v:"a_reserver", l:"À réserver"}, {v:"reserve", l:"Réservé"}]}
+];
+const CHAMPS_INFO = [
+  {cle:"titre", label:"Titre de la carte d'info", type:"texte", requis:true},
+  {cle:"meta", label:"Sous-titre", type:"texte"},
+  {cle:"details", label:"Texte", type:"long", aide:AIDE_TEXTE},
+  {cle:"note", label:"Note en petit", type:"long"}
+];
+
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+// Texte saisi : échappé, puis lignes vides = paragraphes, **mot** = gras
+const riche = s => esc(s).replace(/\n\n+/g, "<br><br>").replace(/\n/g, "<br>").replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+const lienSur = u => /^https?:\/\//i.test(String(u || "").trim()) ? String(u).trim() : "";
+
+// Cartes d'origine + modifications de la base (null = carte supprimée)
+function fusionnerListe(origine, data){
+  data = data || {};
+  const m = new Map();
+  origine.forEach((c, i) => m.set(c.id, Object.assign({cree: i}, c)));
+  Object.keys(data).forEach(id => {
+    const d = data[id];
+    if (d === null){ m.delete(id); return; }
+    if (d && typeof d === "object") m.set(id, Object.assign({}, m.get(id) || {}, d, {id}));
+  });
+  return [...m.values()].sort((a, b) => (a.cree || 0) - (b.cree || 0));
+}
+
+let P = null, C = null;   // modules partage.js et cartes.js, une fois chargés
+let mode = "local";       // "local" = cartes d'origine | "partage" = base en ligne
+let editeur = false;      // code familial saisi ?
+let donnees = null;       // modifications venant de la base
+let statutTemp = "";
+
+const cartes = () => fusionnerListe(ORIGINE, donnees);
+const peutModifier = () => mode === "partage" && editeur && !!C;
+const boutons = id => '<div class="actions"><button type="button" class="btn" data-act="edit" data-id="' + esc(id) + '">Modifier</button><button type="button" class="btn discret" data-act="del" data-id="' + esc(id) + '">Supprimer</button></div>';
+
+function carteInfo(c, edit){
+  return '<div class="card" style="margin-bottom:16px;">' +
+    '<h3>' + esc(c.titre) + '</h3>' +
+    (c.meta ? '<div class="meta">' + esc(c.meta) + '</div>' : '') +
+    (c.details ? '<p style="margin:0;">' + riche(c.details) + '</p>' : '') +
+    (c.note ? '<p style="margin-top:12px; color:var(--stone); font-size:0.88rem;">' + riche(c.note) + '</p>' : '') +
+    (edit ? boutons(c.id) : '') +
+  '</div>';
+}
+
+function carteEtape(c, edit){
+  const st = STATUTS[c.statut];
+  const lien = lienSur(c.lien);
+  return '<div class="card">' +
+    '<h3>' + esc(c.titre) + '</h3>' +
+    (c.meta ? '<div class="meta">' + esc(c.meta) + '</div>' : '') +
+    (c.details ? '<p style="margin:8px 0;">' + riche(c.details) + '</p>' : '') +
+    (lien ? '<p style="margin-top:8px;"><a href="' + esc(lien) + '" target="_blank" rel="noopener">' + esc(c.lien_texte || "Plus d'infos") + ' →</a></p>' : '') +
+    (c.note ? '<p style="margin-top:8px; color:var(--stone); font-size:0.88rem;">' + riche(c.note) + '</p>' : '') +
+    (st ? '<div style="margin-top:10px;"><span class="tag ' + st.cls + '">' + st.label + '</span></div>' : '') +
+    (edit ? boutons(c.id) : '') +
+  '</div>';
+}
+
+function majStatut(){
+  let msg = statutTemp;
+  if (!msg){
+    if (mode === "partage") msg = editeur
+      ? (C ? "✏️ Modification activée : chaque changement est enregistré pour toute la famille." : "Le fichier cartes.js n'a pas pu être chargé : modification impossible.")
+      : "● Feuille de route partagée avec la famille. Pour modifier, clique sur « Modifier » (en bas à droite) et entre le code familial.";
+    else msg = "Valeurs d'origine du site (la base partagée n'est pas joignable : modifications impossibles).";
+  }
+  document.getElementById("sync").textContent = msg;
+}
+
+function afficher(){
+  const edit = peutModifier();
+  const toutes = cartes();
+  document.getElementById("infos").innerHTML = toutes.filter(c => c.jour === "info").map(c => carteInfo(c, edit)).join("");
+  document.getElementById("ajout-infos").innerHTML = edit ? '<button type="button" class="btn discret" data-act="add-info">+ Ajouter une carte d\'info</button>' : "";
+  document.getElementById("jours").innerHTML = JOURS.map(j => {
+    const liste = toutes.filter(c => c.jour === j.id);
+    return '<div class="day-block"><h3>' + esc(j.titre) + '</h3>' +
+      (liste.length ? liste.map(c => carteEtape(c, edit)).join("") : '<p class="small" style="margin:0;">Rien de prévu pour l\'instant.</p>') +
+      (edit ? '<div class="ajout"><button type="button" class="btn" data-act="add" data-jour="' + j.id + '">+ Ajouter une étape</button></div>' : '') +
+    '</div>';
+  }).join("");
+  majStatut();
+}
+
+async function ecrire(id, valeur){
+  const avant = donnees ? donnees[id] : undefined;
+  donnees = Object.assign({}, donnees || {}); donnees[id] = valeur;
+  afficher();
+  try{ await P.fusionner("feuille", {[id]: valeur}); statutTemp = ""; majStatut(); }
+  catch(err){
+    if (avant === undefined) delete donnees[id]; else donnees[id] = avant;
+    statutTemp = "Enregistrement impossible : réessaie dans un instant."; afficher();
+  }
+}
+function supprimer(id){ return ecrire(id, null); }
+
+function ouvrir(c){
+  const nouveau = !c.id;
+  const info = (c.jour === "info");
+  C.ouvrirFormulaire({
+    titre: nouveau ? (info ? "Ajouter une carte d'info" : "Ajouter une étape") : (info ? "Modifier la carte d'info" : "Modifier l'étape"),
+    champs: info ? CHAMPS_INFO : CHAMPS_ETAPE,
+    valeurs: nouveau ? (info ? {} : {jour: c.jour, statut: "aucun"}) : c,
+    onValider: v => ecrire(nouveau ? C.nouvelId() : c.id, Object.assign({}, v, {jour: info ? "info" : v.jour, cree: nouveau ? Date.now() : (c.cree || 0)})),
+    onSupprimer: nouveau ? null : () => supprimer(c.id)
+  });
+}
+
+document.addEventListener("click", e => {
+  const b = e.target.closest && e.target.closest("[data-act]");
+  if (!b || !peutModifier()) return;
+  if (b.dataset.act === "add") return ouvrir({jour: b.dataset.jour});
+  if (b.dataset.act === "add-info") return ouvrir({jour: "info"});
+  const c = cartes().find(x => x.id === b.dataset.id); if (!c) return;
+  if (b.dataset.act === "edit") ouvrir(c);
+  else if (b.dataset.act === "del" && window.confirm("Supprimer définitivement « " + (c.titre || "cette carte") + " » ?")) supprimer(c.id);
+});
+
+afficher();
+
+// Connexion à la base en ligne (si elle n'est pas joignable, la page affiche les cartes d'origine)
+(async function demarrer(){
+  try{
+    P = await import("./partage.js?v=7");
+    if (!(await P.connecter())) throw new Error("connexion impossible");
+    try{ C = await import("./cartes.js?v=7"); }catch(e){ C = null; }
+    editeur = P.estEditeur();
+    P.installerBarre(ed => { editeur = ed; afficher(); });
+    mode = "partage";
+    document.getElementById("sync").textContent = "Connexion à la feuille de route partagée…";
+    P.ecouter("feuille", (data, deCache) => {
+      donnees = data; afficher();
+      if (deCache) document.getElementById("sync").textContent = "○ Dernières données reçues (en attente de connexion).";
+    }, err => {
+      mode = "local"; donnees = null;
+      statutTemp = "Feuille de route partagée indisponible (" + (err && err.code ? err.code : "erreur") + ") : cartes d'origine affichées.";
+      afficher();
+    });
+  }catch(e){
+    mode = "local"; afficher();
+  }
+})();
+</script>
 </body>
 </html>
