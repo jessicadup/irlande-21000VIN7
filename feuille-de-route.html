@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
 <title>Feuille de route — Irlande du Nord</title>
-<link rel="stylesheet" href="css/style.css?v=7">
+<link rel="stylesheet" href="css/style.css?v=9">
 <style>
   .small{color:var(--stone); font-size:0.82rem;}
   .tag.st-areserver{color:var(--amber); border-color:var(--amber);}
@@ -39,8 +39,7 @@
 <main>
   <span class="page-kicker">Jour par jour</span>
   <h1 class="page-title">Feuille de route</h1>
-  <p class="page-lede">Le planning complet du séjour, du 11 au 16 avril 2027.</p>
-  <div id="sync" style="color:var(--stone); font-family:'JetBrains Mono',monospace; font-size:0.78rem; margin:-20px 0 28px;"></div>
+  <div id="sync" style="color:var(--stone); font-family:'JetBrains Mono',monospace; font-size:0.78rem; margin:6px 0 28px;"></div>
 
   <div id="infos"></div>
   <div class="ajout ajout-infos" id="ajout-infos"></div>
@@ -61,21 +60,6 @@ const STATUTS = {
 };
 // Cartes d'origine (modifiables ou supprimables sur le site)
 const ORIGINE = [
- {
-  "id": "vacances",
-  "jour": "info",
-  "titre": "Vacances scolaires — Zone C",
-  "meta": "Toulouse et Montpellier sont dans la même zone : mêmes dates pour les deux familles",
-  "details": "Vacances de printemps : **du samedi 3 avril au lundi 19 avril 2027**"
- },
- {
-  "id": "evenements",
-  "jour": "info",
-  "titre": "À savoir sur place pendant votre séjour",
-  "meta": "Événements repérés à Dublin, Belfast et alentours (vérifié en novembre 2026)",
-  "details": "**Great Ireland Run** — dimanche 11 avril 2027, Phoenix Park, Dublin. Départ le matin (9h) : la course sera terminée à votre atterrissage (15h10). Aucun impact.\n\n**Dublin, 15 et 16 avril** — aucun grand concert, match ni salon repéré à ce jour qui pèse sur votre nuit à Dublin.\n\n**Belfast et alentours, 11 → 16 avril** — rien de gênant repéré. À noter autour de votre séjour : un trail à Portrush le samedi 10 avril (la veille de votre arrivée), et un grand congrès de neurosciences à l'ICC Belfast du 25 au 28 avril (après votre départ).\n\n**Belfast City Marathon** — début mai, après votre séjour.",
-  "note": "Les programmes de printemps 2027 (festivals, concerts) ne sont pas tous publiés : à revérifier en mars 2027."
- },
  {
   "id": "vol_aller",
   "jour": "j11",
@@ -264,9 +248,9 @@ afficher();
 // Connexion à la base en ligne (si elle n'est pas joignable, la page affiche les cartes d'origine)
 (async function demarrer(){
   try{
-    P = await import("./partage.js?v=7");
+    P = await import("./partage.js?v=9");
     if (!(await P.connecter())) throw new Error("connexion impossible");
-    try{ C = await import("./cartes.js?v=7"); }catch(e){ C = null; }
+    try{ C = await import("./cartes.js?v=9"); }catch(e){ C = null; }
     editeur = P.estEditeur();
     P.installerBarre(ed => { editeur = ed; afficher(); });
     mode = "partage";
