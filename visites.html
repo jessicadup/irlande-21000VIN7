@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
 <title>Visites — Irlande du Nord</title>
-<link rel="stylesheet" href="css/style.css?v=7">
+<link rel="stylesheet" href="css/style.css?v=11">
 <style>
   .small{color:var(--stone); font-size:0.82rem;}
   .tag.t-oui{color:var(--sea); border-color:var(--sea);}
@@ -39,15 +39,13 @@
 <main>
   <span class="page-kicker">À voir, à faire</span>
   <h1 class="page-title">Visites & excursions</h1>
-  <p class="page-lede">Sites, activités et excursions, avec les infos pratiques pour les enfants (6 ans et 2 ans½).</p>
-  <div id="sync" style="color:var(--stone); font-family:'JetBrains Mono',monospace; font-size:0.78rem; margin:-20px 0 28px;"></div>
+  <div id="sync" style="color:var(--stone); font-family:'JetBrains Mono',monospace; font-size:0.78rem; margin:6px 0 28px;"></div>
 
   <div class="ajout" id="ajout"></div>
   <div id="liste"></div>
 
   <div class="empty-state" style="margin-top:24px;">
-    <strong>Autres visites à venir</strong>
-    D'autres propositions arriveront une fois l'itinéraire géographique complet défini.
+    <strong style="margin-bottom:0;">Autres visites à venir</strong>
   </div>
 </main>
 
@@ -191,9 +189,9 @@ afficher();
 // Connexion à la base en ligne (si elle n'est pas joignable, la page affiche les cartes d'origine)
 (async function demarrer(){
   try{
-    P = await import("./partage.js?v=7");
+    P = await import("./partage.js?v=11");
     if (!(await P.connecter())) throw new Error("connexion impossible");
-    try{ C = await import("./cartes.js?v=7"); }catch(e){ C = null; }
+    try{ C = await import("./cartes.js?v=11"); }catch(e){ C = null; }
     editeur = P.estEditeur();
     P.installerBarre(ed => { editeur = ed; afficher(); });
     mode = "partage";
