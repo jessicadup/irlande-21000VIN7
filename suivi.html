@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
 <title>Suivi des tâches — Irlande du Nord</title>
-<link rel="stylesheet" href="css/style.css?v=7">
+<link rel="stylesheet" href="css/style.css?v=13">
 <style>.task-row input:disabled{cursor:not-allowed; opacity:0.55;}</style>
 </head>
 <body>
@@ -28,8 +28,7 @@
 
 <main>
   <span class="page-kicker">Ne rien oublier</span>
-  <h1 class="page-title">Suivi des tâches</h1>
-  <p class="page-lede">Les étapes à réaliser dans l'ordre pour préparer le voyage. Coche au fur et à mesure : la liste est partagée avec toute la famille.</p>
+  <h1 class="page-title" style="margin-bottom:32px;">Suivi des tâches</h1>
 
   <div class="progress-bar"><div class="progress-bar-fill" id="progress-fill"></div></div>
   <div id="progress-label" class="meta" style="color:var(--stone); margin-top:-24px; margin-bottom:24px; font-family:'JetBrains Mono',monospace; font-size:0.82rem;"></div>
@@ -44,22 +43,22 @@
 
 <script>
 const TASKS = [
-  {id:"dates", title:"Cadrer les dates et la durée", desc:"Dates bloquées : du 11 au 16 avril 2027 (vacances de printemps Zone C), pour les 8 voyageurs."},
-  {id:"passeports", title:"Vérifier les passeports de toute la famille", desc:"Obligatoires pour tous (y compris enfants). Famille N°1 : demande lancée, passeports à récupérer. Famille N°2 : à vérifier et à lancer si besoin."},
-  {id:"assurance", title:"Prendre une assurance voyage / santé", desc:"La carte européenne d'assurance maladie ne couvre pas le Royaume-Uni depuis le Brexit."},
-  {id:"eta", title:"Faire la demande ETA pour tout le monde", desc:"Obligatoire pour les 8 voyageurs, y compris les enfants — environ 23€/personne, à demander sur gov.uk ou l'appli UK ETA, une fois les nouveaux passeports en main (l'ETA est liée au numéro de passeport)."},
-  {id:"argent", title:"Prévoir de la monnaie en livres sterling", desc:"L'Irlande du Nord utilise la livre (£), pas l'euro — vérifier aussi les frais de carte bancaire à l'étranger."},
-  {id:"vols", title:"Réserver les vols Toulouse → Dublin", desc:"Vol repéré sur Aer Lingus : aller 11/04 13h50→15h10, retour 16/04 09h55→13h10. Départ groupé de Toulouse pour les deux familles. Réservation ouverte, rien de réservé pour l'instant."},
-  {id:"itineraire", title:"Définir l'itinéraire géographique", desc:"Belfast, Chaussée des Géants, Causeway Coast, Derry..."},
-  {id:"logements", title:"Rechercher et réserver les logements (Belfast + Dublin)", desc:"Logement à Belfast pour 4 nuits (11-15 avril) et logement à Dublin pour 1 nuit (15 avril), adaptés au groupe. Belfast : une grande maison pour tous ou deux logements côte à côte, à décider."},
-  {id:"voiture", title:"Réserver les 2 locations de voiture à Dublin", desc:"Une voiture par famille. Conduite à gauche, taille adaptée (sièges enfants, bagages, nb de personnes)."},
-  {id:"parking", title:"Réserver le parking aéroport Toulouse", desc:"Parking P6, 2 voitures, 65€/voiture pour la durée du séjour."},
-  {id:"visites", title:"Planifier les visites et excursions", desc:"Adaptées aux enfants (6 ans et 2 ans½), avec horaires et tarifs. À réserver à l'avance pour celles à créneaux horaires (Titanic Belfast, Giant's Causeway)."},
-  {id:"feuille", title:"Construire la feuille de route jour par jour", desc:"Assembler vols, logements et visites dans un planning chronologique."},
-  {id:"budget", title:"Calculer le budget global et par foyer", desc:"Additionner tous les tarifs et répartir les coûts si besoin."},
-  {id:"site", title:"Créer et structurer le site web", desc:"Fait — squelette en place, à enrichir au fur et à mesure."},
-  {id:"ligne", title:"Mettre en ligne et partager le lien", desc:"Héberger le site, tester, puis partager le lien (privé, non référencé) à la famille."},
-  {id:"maj", title:"Tenir le site à jour", desc:"Mettre à jour au fur et à mesure des réservations confirmées."},
+  {id:"dates", title:"Cadrer les dates et la durée"},
+  {id:"passeports", title:"Vérifier les passeports de toute la famille"},
+  {id:"assurance", title:"Prendre une assurance voyage / santé"},
+  {id:"eta", title:"Faire la demande ETA pour tout le monde"},
+  {id:"argent", title:"Prévoir de la monnaie en livres sterling"},
+  {id:"vols", title:"Réserver les vols Toulouse → Dublin"},
+  {id:"itineraire", title:"Définir l'itinéraire géographique"},
+  {id:"logements", title:"Rechercher et réserver les logements (Belfast + Dublin)"},
+  {id:"voiture", title:"Réserver les 2 locations de voiture à Dublin"},
+  {id:"parking", title:"Réserver le parking aéroport Toulouse"},
+  {id:"visites", title:"Planifier les visites et excursions"},
+  {id:"feuille", title:"Construire la feuille de route jour par jour"},
+  {id:"budget", title:"Calculer le budget global et par foyer"},
+  {id:"site", title:"Créer et structurer le site web"},
+  {id:"ligne", title:"Mettre en ligne et partager le lien"},
+  {id:"maj", title:"Tenir le site à jour"},
 ];
 
 const STORAGE_KEY = "irlande_tasks_done";
@@ -89,7 +88,6 @@ function render(){
       <input type="checkbox" id="chk-${t.id}" ${done[t.id] ? "checked" : ""} ${verrou ? "disabled" : ""}>
       <div>
         <div class="task-title">${t.title}</div>
-        <div class="task-desc">${t.desc}</div>
       </div>
     `;
     row.querySelector("input").addEventListener("change", async e => {
@@ -118,7 +116,7 @@ render();
 // Connexion à la base en ligne (si elle n'est pas joignable, la page marche comme avant, sur cet appareil)
 (async function demarrer(){
   try{
-    P = await import("./partage.js?v=7");
+    P = await import("./partage.js?v=13");
     if (!(await P.connecter())) throw new Error("connexion impossible");
     editeur = P.estEditeur();
     P.installerBarre(ed => { editeur = ed; render(); });
