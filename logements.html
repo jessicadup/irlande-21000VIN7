@@ -5,11 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
 <title>Logements — Irlande du Nord</title>
-<link rel="stylesheet" href="css/style.css?v=7">
+<link rel="stylesheet" href="css/style.css?v=10">
 <style>
   .etape{margin-bottom:40px;}
   .etape h2{font-size:1.3rem; margin-bottom:4px;}
-  .etape .intro{color:var(--stone); font-size:0.9rem; margin:0 0 16px; max-width:640px;}
   .small{color:var(--stone); font-size:0.82rem;}
   .tag.st-etude{color:var(--stone); border-color:var(--stone);}
   .tag.st-retenu{color:var(--amber); border-color:var(--amber);}
@@ -42,21 +41,18 @@
 <main>
   <span class="page-kicker">Hébergements</span>
   <h1 class="page-title">Logements</h1>
-  <p class="page-lede">Les propositions de logement pour chaque étape, avec le tarif et le lien de l'annonce. Un logement « retenu » ou « réservé » alimente automatiquement la ligne correspondante du Budget.</p>
-  <div id="sync" style="color:var(--stone); font-family:'JetBrains Mono',monospace; font-size:0.78rem; margin:-20px 0 28px;"></div>
+  <div id="sync" style="color:var(--stone); font-family:'JetBrains Mono',monospace; font-size:0.78rem; margin:6px 0 28px;"></div>
 
   <section class="etape">
     <h2>Belfast</h2>
-    <div class="meta">4 nuits · du 11 au 15 avril</div>
-    <p class="intro">Pour 8 personnes (2 adultes + 2 enfants, 2 adultes, 1 adulte, 1 ado). Formule à décider : une grande maison pour tous, ou deux logements côte à côte.</p>
+    <div class="meta" style="margin-bottom:16px;">4 nuits · du 11 au 15 avril</div>
     <div id="liste-belfast"></div>
     <div class="ajout" id="ajout-belfast"></div>
   </section>
 
   <section class="etape">
     <h2>Dublin</h2>
-    <div class="meta">1 nuit · le 15 avril</div>
-    <p class="intro">Proche de l'aéroport ou du centre selon la visite prévue ce jour-là.</p>
+    <div class="meta" style="margin-bottom:16px;">1 nuit · le 15 avril</div>
     <div id="liste-dublin"></div>
     <div class="ajout" id="ajout-dublin"></div>
   </section>
@@ -192,9 +188,9 @@ afficher();
 // Connexion à la base en ligne
 (async function demarrer(){
   try{
-    P = await import("./partage.js?v=7");
+    P = await import("./partage.js?v=10");
     if (!(await P.connecter())) throw new Error("connexion impossible");
-    try{ C = await import("./cartes.js?v=7"); }catch(e){ C = null; }
+    try{ C = await import("./cartes.js?v=10"); }catch(e){ C = null; }
     editeur = P.estEditeur();
     P.installerBarre(ed => { editeur = ed; afficher(); });
     mode = "partage";
