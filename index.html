@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
 <title>Irlande du Nord — Notre voyage</title>
-<link rel="stylesheet" href="css/style.css?v=14">
+<link rel="stylesheet" href="css/style.css?v=15">
 <style>
   .btn{font:inherit; cursor:pointer; border-radius:var(--radius); padding:6px 12px; border:1px solid var(--amber); background:transparent; color:var(--amber);}
   .btn:hover{background:var(--amber); color:var(--basalt);}
@@ -52,10 +52,11 @@
 const ORIGINE = {
   s1:   {num:"8",   label:"Voyageurs"},
   s2:   {num:"6",   label:"Jours (11 → 16 avril)"},
-  s3:   {num:"2",   label:"Familles"},
+  s3:   {num:"3",   label:"Familles"},
   s4:   {num:"TLS", label:"Départ groupé de Toulouse"},
   f1:   {titre:"Famille N°1", meta:"4 personnes", details:"Vous, votre conjoint, et vos 2 enfants (6 ans et 2 ans½)"},
-  f2:   {titre:"Famille N°2", meta:"4 personnes", details:"Frère 1, sa femme, leur fille (nièce, 16 ans), et frère 2"},
+  f2:   {titre:"Famille N°2", meta:"3 personnes", details:"Frère 1, sa femme, et leur fille (nièce, 16 ans)"},
+  f3:   {titre:"Famille N°3", meta:"1 personne", details:"Frère 2"},
   vols: {titre:"Vols", meta:"Aer Lingus, départ groupé de Toulouse", details:"Aller 11/04 : **13h50 → 15h10** (Toulouse → Dublin)\nRetour 16/04 : **09h55 → 13h10** (Dublin → Toulouse)"},
   etat: {titre:"Où en est-on", meta:"Prochaine étape", details:"Dates bloquées. Les vols Aer Lingus sont ouverts à la réservation, mais rien n'est encore réservé. Passeports de la famille N°1 en cours ; ceux de la famille N°2 restent à lancer."}
 };
@@ -112,7 +113,7 @@ function majStatut(){
 function afficher(){
   const edit = peutModifier();
   document.getElementById("stats").innerHTML = STATS.map(id => stat(id, edit)).join("");
-  document.getElementById("familles").innerHTML = carte("f1", edit) + carte("f2", edit);
+  document.getElementById("familles").innerHTML = carte("f1", edit) + carte("f2", edit) + carte("f3", edit);
   document.getElementById("bas").innerHTML = carte("vols", edit) + carte("etat", edit, true, LIEN_SUIVI);
   majStatut();
 }
@@ -149,9 +150,9 @@ afficher();
 // Connexion à la base en ligne (si elle n'est pas joignable, la page affiche les textes d'origine)
 (async function demarrer(){
   try{
-    P = await import("./partage.js?v=14");
+    P = await import("./partage.js?v=15");
     if (!(await P.connecter())) throw new Error("connexion impossible");
-    try{ C = await import("./cartes.js?v=14"); }catch(e){ C = null; }
+    try{ C = await import("./cartes.js?v=15"); }catch(e){ C = null; }
     editeur = P.estEditeur();
     P.installerBarre(ed => { editeur = ed; afficher(); });
     mode = "partage";
