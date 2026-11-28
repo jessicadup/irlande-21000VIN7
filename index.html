@@ -5,7 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
 <title>Irlande du Nord — Notre voyage</title>
-<link rel="stylesheet" href="css/style.css?v=8">
+<link rel="stylesheet" href="css/style.css?v=14">
+<style>
+  .btn{font:inherit; cursor:pointer; border-radius:var(--radius); padding:6px 12px; border:1px solid var(--amber); background:transparent; color:var(--amber);}
+  .btn:hover{background:var(--amber); color:var(--basalt);}
+  .actions{margin-top:14px; display:flex; gap:8px; flex-wrap:wrap;}
+</style>
 </head>
 <body>
 
@@ -29,53 +34,140 @@
   <span class="page-kicker">11 → 16 avril 2027</span>
   <h1 class="page-title" style="margin-bottom:32px;">Notre voyage en Irlande du Nord</h1>
 
-  <div class="grid grid-4" style="margin-bottom:40px;">
-    <div class="stat"><span class="num">8</span><span class="label">Voyageurs</span></div>
-    <div class="stat"><span class="num">6</span><span class="label">Jours (11 → 16 avril)</span></div>
-    <div class="stat"><span class="num">2</span><span class="label">Familles</span></div>
-    <div class="stat"><span class="num">TLS</span><span class="label">Départ groupé de Toulouse</span></div>
-  </div>
+  <div id="sync" hidden style="color:var(--stone); font-family:'JetBrains Mono',monospace; font-size:0.78rem; margin:-18px 0 24px;"></div>
 
-  <div class="grid grid-2">
-    <div class="card">
-      <h3>Famille N°1</h3>
-      <div class="meta">4 personnes</div>
-      <p style="margin:0;">
-        Vous, votre conjoint, et vos 2 enfants (6 ans et 2 ans½)
-      </p>
-    </div>
-    <div class="card">
-      <h3>Famille N°2</h3>
-      <div class="meta">4 personnes</div>
-      <p style="margin:0;">
-        Frère 1, sa femme, leur fille (nièce, 16 ans), et frère 2
-      </p>
-    </div>
-  </div>
+  <div class="grid grid-4" id="stats" style="margin-bottom:40px;"></div>
 
-  <div class="grid grid-2" style="margin-top:16px;">
-    <div class="card">
-      <h3>Vols</h3>
-      <div class="meta">Aer Lingus, départ groupé de Toulouse</div>
-      <p style="margin:0;">
-        Aller 11/04 : <span class="price">13h50 → 15h10</span> (Toulouse → Dublin)<br>
-        Retour 16/04 : <span class="price">09h55 → 13h10</span> (Dublin → Toulouse)
-      </p>
-    </div>
-    <div class="card">
-      <h3>Où en est-on</h3>
-      <div class="meta">Prochaine étape</div>
-      <p style="margin:0; color:var(--stone);">
-        Dates bloquées. Les vols Aer Lingus sont ouverts à la réservation, mais rien n'est encore réservé. Passeports de la famille N°1 en cours ; ceux de la famille N°2 restent à lancer.
-      </p>
-      <p style="margin-top:14px;"><a href="suivi.html">→ Voir la liste des tâches</a></p>
-    </div>
-  </div>
+  <div class="grid grid-2" id="familles"></div>
+
+  <div class="grid grid-2" id="bas" style="margin-top:16px;"></div>
 
 </main>
 
 <div class="columns-divider"></div>
 <footer>Site privé — lien non référencé, à ne partager qu'en famille</footer>
 
+<script>
+// Textes d'origine de l'Accueil (modifiables sur le site : les modifications de la base les remplacent)
+const ORIGINE = {
+  s1:   {num:"8",   label:"Voyageurs"},
+  s2:   {num:"6",   label:"Jours (11 → 16 avril)"},
+  s3:   {num:"2",   label:"Familles"},
+  s4:   {num:"TLS", label:"Départ groupé de Toulouse"},
+  f1:   {titre:"Famille N°1", meta:"4 personnes", details:"Vous, votre conjoint, et vos 2 enfants (6 ans et 2 ans½)"},
+  f2:   {titre:"Famille N°2", meta:"4 personnes", details:"Frère 1, sa femme, leur fille (nièce, 16 ans), et frère 2"},
+  vols: {titre:"Vols", meta:"Aer Lingus, départ groupé de Toulouse", details:"Aller 11/04 : **13h50 → 15h10** (Toulouse → Dublin)\nRetour 16/04 : **09h55 → 13h10** (Dublin → Toulouse)"},
+  etat: {titre:"Où en est-on", meta:"Prochaine étape", details:"Dates bloquées. Les vols Aer Lingus sont ouverts à la réservation, mais rien n'est encore réservé. Passeports de la famille N°1 en cours ; ceux de la famille N°2 restent à lancer."}
+};
+const STATS = ["s1", "s2", "s3", "s4"];
+const CHAMPS_STAT = [
+  {cle:"num", label:"Chiffre ou mot (ex. 8)", type:"texte", requis:true},
+  {cle:"label", label:"Libellé", type:"texte", requis:true}
+];
+const CHAMPS_CARTE = [
+  {cle:"titre", label:"Titre de la carte", type:"texte", requis:true},
+  {cle:"meta", label:"Sous-titre", type:"texte"},
+  {cle:"details", label:"Texte", type:"long"}
+];
+const LIEN_SUIVI = '<p style="margin-top:14px;"><a href="suivi.html">→ Voir la liste des tâches</a></p>';
+
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+// Texte saisi : échappé, puis lignes vides = paragraphes, **mot** = mis en valeur (ambre)
+const riche = s => esc(s).replace(/\n\n+/g, "<br><br>").replace(/\n/g, "<br>").replace(/\*\*(.+?)\*\*/g, '<span class="price">$1</span>');
+
+let P = null, C = null;   // modules partage.js et cartes.js, une fois chargés
+let mode = "local";       // "local" = textes d'origine | "partage" = base en ligne
+let editeur = false;      // code familial saisi ?
+let donnees = null;       // modifications venant de la base
+let statutTemp = "";
+
+const peutModifier = () => mode === "partage" && editeur && !!C;
+const bloc = id => Object.assign({}, ORIGINE[id], (donnees && donnees[id] && typeof donnees[id] === "object") ? donnees[id] : {});
+const bouton = (id, style) => '<div class="actions"' + (style ? ' style="' + style + '"' : '') + '><button type="button" class="btn" data-act="edit" data-id="' + id + '">Modifier</button></div>';
+
+function stat(id, edit){
+  const b = bloc(id);
+  return '<div class="stat"><span class="num">' + esc(b.num) + '</span><span class="label">' + esc(b.label) + '</span>' + (edit ? bouton(id, "margin-top:10px;") : '') + '</div>';
+}
+function carte(id, edit, gris, suite){
+  const b = bloc(id);
+  return '<div class="card">' +
+    '<h3>' + esc(b.titre) + '</h3>' +
+    (b.meta ? '<div class="meta">' + esc(b.meta) + '</div>' : '') +
+    (b.details ? '<p style="margin:0;' + (gris ? ' color:var(--stone);' : '') + '">' + riche(b.details) + '</p>' : '') +
+    (suite || '') +
+    (edit ? bouton(id) : '') +
+  '</div>';
+}
+
+function majStatut(){
+  let msg = statutTemp;
+  if (!msg && mode === "partage" && editeur){
+    msg = C ? "✏️ Modification activée : chaque changement est enregistré pour toute la famille." : "Le fichier cartes.js n'a pas pu être chargé : modification impossible.";
+  }
+  const el = document.getElementById("sync");
+  el.textContent = msg; el.hidden = !msg;
+}
+
+function afficher(){
+  const edit = peutModifier();
+  document.getElementById("stats").innerHTML = STATS.map(id => stat(id, edit)).join("");
+  document.getElementById("familles").innerHTML = carte("f1", edit) + carte("f2", edit);
+  document.getElementById("bas").innerHTML = carte("vols", edit) + carte("etat", edit, true, LIEN_SUIVI);
+  majStatut();
+}
+
+async function ecrire(id, valeur){
+  const avant = donnees ? donnees[id] : undefined;
+  donnees = Object.assign({}, donnees || {}); donnees[id] = valeur;
+  afficher();
+  try{ await P.fusionner("accueil", {[id]: valeur}); statutTemp = ""; majStatut(); }
+  catch(err){
+    if (avant === undefined) delete donnees[id]; else donnees[id] = avant;
+    statutTemp = "Enregistrement impossible : réessaie dans un instant."; afficher();
+  }
+}
+
+function ouvrir(id){
+  const estStat = STATS.includes(id);
+  C.ouvrirFormulaire({
+    titre: estStat ? "Modifier le chiffre" : "Modifier la carte",
+    champs: estStat ? CHAMPS_STAT : CHAMPS_CARTE,
+    valeurs: bloc(id),
+    onValider: v => ecrire(id, v)
+  });
+}
+
+document.addEventListener("click", e => {
+  const b = e.target.closest && e.target.closest("[data-act]");
+  if (!b || !peutModifier() || !ORIGINE[b.dataset.id]) return;
+  if (b.dataset.act === "edit") ouvrir(b.dataset.id);
+});
+
+afficher();
+
+// Connexion à la base en ligne (si elle n'est pas joignable, la page affiche les textes d'origine)
+(async function demarrer(){
+  try{
+    P = await import("./partage.js?v=14");
+    if (!(await P.connecter())) throw new Error("connexion impossible");
+    try{ C = await import("./cartes.js?v=14"); }catch(e){ C = null; }
+    editeur = P.estEditeur();
+    P.installerBarre(ed => { editeur = ed; afficher(); });
+    mode = "partage";
+    P.ecouter("accueil", (data, deCache) => {
+      donnees = data;
+      statutTemp = deCache ? "○ Dernières données reçues (en attente de connexion)." : "";
+      afficher();
+    }, err => {
+      mode = "local"; donnees = null;
+      statutTemp = "Accueil partagé indisponible (" + (err && err.code ? err.code : "erreur") + ") : textes d'origine affichés.";
+      afficher();
+    });
+  }catch(e){
+    mode = "local"; afficher();
+  }
+})();
+</script>
 </body>
 </html>
