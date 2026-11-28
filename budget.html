@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
 <title>Budget — Irlande du Nord</title>
-<link rel="stylesheet" href="css/style.css?v=16">
+<link rel="stylesheet" href="css/style.css?v=17">
 <style>
   .table-wrap{overflow-x:auto;}
   .table-wrap table{min-width:780px;}
@@ -16,9 +16,11 @@
   .tag.st-achiffrer{color:var(--stone); border-color:var(--stone);}
   .tag.st-hypothese{color:var(--stone); border-color:var(--stone); border-style:dashed;}
   td.num.grey{color:var(--stone);}
-  .in-prix, .in-taux, .in-statut{font:inherit; background:var(--basalt); color:var(--fog); border:1px solid var(--stone); border-radius:var(--radius); padding:4px 8px;}
+  .in-prix, .in-taux, .in-statut, .in-mode, .in-part, .in-montant{font:inherit; background:var(--basalt); color:var(--fog); border:1px solid var(--stone); border-radius:var(--radius); padding:4px 8px;}
   .in-prix, .in-taux{width:90px;}
-  .in-statut{max-width:150px;}
+  .in-part{width:64px;}
+  .in-montant{width:84px;}
+  .in-statut, .in-mode{max-width:150px;}
   .edit-line{display:block; margin-top:6px;}
 </style>
 </head>
@@ -112,7 +114,7 @@ const LIGNES = [
 ];
 // ======================================================================
 //  Fin des chiffres. Ci-dessous : le calcul et l'affichage (ne pas toucher).
-//  Les tarifs et statuts modifiés sur le site (mode « Modifier ») sont
+//  Les tarifs, statuts, parts et montants modifiés sur le site (mode « Modifier ») sont
 //  enregistrés dans la base partagée : ils remplacent les valeurs ci-dessus.
 // ======================================================================
 
@@ -123,7 +125,7 @@ const STATUTS = {
   hypothese:  {label:"Hypothèse",      cls:"st-hypothese"}
 };
 let taux = TAUX_LIVRE;
-LIGNES.forEach(l => { l.defPrix = l.prix; l.defStatut = l.statut; });
+LIGNES.forEach(l => { l.defPrix = l.prix; l.defStatut = l.statut; l.defParts = [l.q1, l.q2, l.q3]; l.parts = l.defParts.slice(); l.mode = "parts"; l.montants = [null, null, null]; });
 
 let P = null;            // le module partage.js, une fois chargé
 let mode = "local";      // "local" = valeurs du site | "partage" = base en ligne
@@ -140,15 +142,26 @@ const fmtUnit = (prix, devise) => devise === "GBP"
   ? "£" + String(prix).replace(".", ",")
   : new Intl.NumberFormat("fr-FR", {style:"currency", currency:"EUR", maximumFractionDigits:2}).format(prix);
 
+// Trois nombres (un par famille) venant de la base ; vide autorisé (= null) pour les montants. Sinon null.
+function lireTrois(a, videOk){
+  if (!Array.isArray(a) || a.length !== 3) return null;
+  const r = a.map(v => (v === null || v === undefined) ? null : Number(v));
+  return r.every(v => (v === null) ? videOk : (isFinite(v) && v >= 0)) ? r : null;
+}
+
 // Applique les données de la base (ou les valeurs d'origine si data est vide)
 function appliquer(data){
   data = data || {};
   LIGNES.forEach(l => {
     const d = data[l.id];
-    if (d && typeof d === "object" && "prix" in d){
-      l.prix = (d.prix === null || d.prix === undefined) ? null : Number(d.prix);
-      l.statut = STATUTS[d.statut] ? d.statut : l.defStatut;
+    const o = (d && typeof d === "object") ? d : {};
+    if ("prix" in o){
+      l.prix = (o.prix === null || o.prix === undefined) ? null : Number(o.prix);
+      l.statut = STATUTS[o.statut] ? o.statut : l.defStatut;
     } else { l.prix = l.defPrix; l.statut = l.defStatut; }
+    l.mode = (o.mode === "montants") ? "montants" : "parts";
+    l.parts = lireTrois(o.parts, false) || l.defParts.slice();
+    l.montants = lireTrois(o.montants, true) || [null, null, null];
   });
   taux = (typeof data._taux === "number" && data._taux > 0) ? data._taux : TAUX_LIVRE;
 }
@@ -168,6 +181,7 @@ function appliquerLogements(){
     l.prix = retenus.reduce((t, c) => t + c.tarif, 0);
     l.statut = retenus.every(c => c.statut === "reserve") ? "reserve" : "estime";
     l.auto = retenus.map(c => c.nom || "logement");
+    l.mode = "parts";
   });
 }
 function recalculer(){ appliquer(budgetData); appliquerLogements(); }
@@ -175,14 +189,21 @@ function recalculer(){ appliquer(budgetData); appliquerLogements(); }
 function calculer(){
   const r = {t:[0, 0, 0], paye:0, hypo:0, manque:[]};
   LIGNES.forEach(l => {
-    const q = [l.q1, l.q2, l.q3];
-    const unit = (l.prix === null) ? null : l.prix * (l.devise === "GBP" ? taux : 1);
-    if (unit === null) l.e = [null, null, null];
-    else if (l.partage){
-      const tot = unit * (l.nb || 1), parts = q[0] + q[1] + q[2];
-      l.e = q.map(p => parts > 0 ? tot * p / parts : 0);
-    } else l.e = q.map(p => unit * p);
-    if (unit === null || l.statut === "a_chiffrer"){
+    const q = l.parts;
+    let vide;
+    if (l.mode === "montants"){
+      vide = l.montants.every(v => v === null);
+      l.e = vide ? [null, null, null] : l.montants.map(v => v || 0);
+    } else {
+      const unit = (l.prix === null) ? null : l.prix * (l.devise === "GBP" ? taux : 1);
+      vide = (unit === null);
+      if (vide) l.e = [null, null, null];
+      else if (l.partage){
+        const tot = unit * (l.nb || 1), parts = q[0] + q[1] + q[2];
+        l.e = q.map(p => parts > 0 ? tot * p / parts : 0);
+      } else l.e = q.map(p => unit * p);
+    }
+    if (vide || l.statut === "a_chiffrer"){
       if (!r.manque.includes(l.poste)) r.manque.push(l.poste);
       return;
     }
@@ -195,12 +216,13 @@ function calculer(){
 }
 
 function detailCalcul(l){
-  if (l.prix === null) return "";
+  if (l.mode === "montants" || l.prix === null) return "";
   if (l.partage) return fmtUnit(l.prix, l.devise) + (l.nb ? " × " + l.nb + " (" + l.unite + ")" : " au total") + ", partagé";
-  return fmtUnit(l.prix, l.devise) + " × " + (l.q1 + l.q2 + l.q3) + " (" + l.unite + ")";
+  return fmtUnit(l.prix, l.devise) + " × " + String(Math.round((l.parts[0] + l.parts[1] + l.parts[2]) * 100) / 100).replace(".", ",") + " (" + l.unite + ")";
 }
 
-const enSaisie = () => { const a = document.activeElement; return !!(a && a.matches && a.matches(".in-prix, .in-statut, .in-taux")); };
+const SEL_SAISIE = ".in-prix, .in-statut, .in-taux, .in-mode, .in-part, .in-montant";
+const enSaisie = () => { const a = document.activeElement; return !!(a && a.matches && a.matches(SEL_SAISIE)); };
 const montantTexte = v => (v === null || v === undefined) ? "" : String(v).replace(".", ",");
 
 function majStatut(){
@@ -218,7 +240,7 @@ function afficher(){
   const r = calculer();
   const edit = (mode === "partage" && editeur);
   const a = document.activeElement;
-  const memo = (a && a.dataset && a.dataset.id && a.matches(".in-prix, .in-statut, .in-taux")) ? {id:a.dataset.id, cls:[...a.classList].find(c => c.startsWith("in-"))} : null;
+  const memo = (a && a.dataset && a.dataset.id && a.matches(SEL_SAISIE)) ? {id:a.dataset.id, i:a.dataset.i, cls:[...a.classList].find(c => c.startsWith("in-"))} : null;
 
   const cell = (v, q, grey) => (v === null || q === 0) ? '<td class="num grey">—</td>' : '<td class="num' + (grey ? ' grey' : '') + '">' + (grey ? '(' + fmt(v) + ')' : fmt(v)) + '</td>';
   let html = "", cat = "";
@@ -228,15 +250,24 @@ function afficher(){
     const grey = (l.statut === "hypothese");
     const tot = (l.e[0] === null) ? null : l.e[0] + l.e[1] + l.e[2];
     const calc = detailCalcul(l);
-    const champPrix = (edit && !l.auto) ? '<label class="small edit-line">Tarif (' + l.unite + ') <input class="in-prix" data-id="' + l.id + '" inputmode="decimal" autocomplete="off" value="' + montantTexte(l.prix) + '" aria-label="Tarif : ' + l.poste + '"> ' + (l.devise === "GBP" ? "£" : "€") + '</label>' : '';
+    const mont = (l.mode === "montants");
+    const menuMode = (edit && !l.auto) ? '<label class="small edit-line">Répartition <select class="in-mode" data-id="' + l.id + '" aria-label="Répartition : ' + l.poste + '"><option value="parts"' + (mont ? '' : ' selected') + '>Parts</option><option value="montants"' + (mont ? ' selected' : '') + '>Montants</option></select></label>' : '';
+    const cellFam = i => {
+      if (edit && mont) return '<td class="num"><input class="in-montant" data-id="' + l.id + '" data-i="' + i + '" inputmode="decimal" autocomplete="off" value="' + montantTexte(l.montants[i]) + '" aria-label="Montant famille N°' + (i + 1) + ' : ' + l.poste + '"> €</td>';
+      const vide = (l.e[i] === null) || (mont ? l.montants[i] === null : l.parts[i] === 0);
+      const val = vide ? '—' : (grey ? '(' + fmt(l.e[i]) + ')' : fmt(l.e[i]));
+      const champPart = (edit && !mont) ? '<label class="small edit-line">parts <input class="in-part" data-id="' + l.id + '" data-i="' + i + '" inputmode="decimal" autocomplete="off" value="' + montantTexte(l.parts[i]) + '" aria-label="Parts famille N°' + (i + 1) + ' : ' + l.poste + '"></label>' : '';
+      return '<td class="num' + ((vide || grey) ? ' grey' : '') + '">' + val + champPart + '</td>';
+    };
+    const champPrix = (edit && !l.auto && !mont) ? '<label class="small edit-line">Tarif (' + l.unite + ') <input class="in-prix" data-id="' + l.id + '" inputmode="decimal" autocomplete="off" value="' + montantTexte(l.prix) + '" aria-label="Tarif : ' + l.poste + '"> ' + (l.devise === "GBP" ? "£" : "€") + '</label>' : '';
     const celluleStatut = (edit && !l.auto)
       ? '<td><select class="in-statut" data-id="' + l.id + '" aria-label="Statut : ' + l.poste + '">' + Object.keys(STATUTS).map(k => '<option value="' + k + '"' + (k === l.statut ? ' selected' : '') + '>' + STATUTS[k].label + '</option>').join("") + '</select></td>'
       : '<td><span class="tag ' + st.cls + '">' + st.label + '</span></td>';
     html += '<tr><td><strong>' + l.poste + '</strong>' + (calc ? '<br><span class="small">' + calc + '</span>' : '') +
             (l.auto ? '<br><span class="small" style="color:var(--sea);">Alimenté par la page Logements : ' + esc(l.auto.join(" + ")) + '.</span>' : '') +
             (l.lien ? '<br><span class="small"><a href="' + l.lien + '" target="_blank">' + l.lienTexte + '</a></span>' : '') +
-            champPrix + '</td>' + celluleStatut +
-            cell(l.e[0], l.q1, grey) + cell(l.e[1], l.q2, grey) + cell(l.e[2], l.q3, grey) + cell(tot, 1, grey) + '</tr>';
+            menuMode + champPrix + '</td>' + celluleStatut +
+            cellFam(0) + cellFam(1) + cellFam(2) + cell(tot, 1, grey) + '</tr>';
   });
   document.getElementById("lignes").innerHTML = html;
   document.getElementById("pied").innerHTML = '<tr><td colspan="2">Total chiffré à ce jour</td><td class="num">' + fmt(r.t[0]) + '</td><td class="num">' + fmt(r.t[1]) + '</td><td class="num">' + fmt(r.t[2]) + '</td><td class="num">' + fmt(r.t[0] + r.t[1] + r.t[2]) + '</td></tr>';
@@ -256,7 +287,7 @@ function afficher(){
   majStatut();
 
   if (memo){
-    const n = document.querySelector('[data-id="' + memo.id + '"].' + memo.cls);
+    const n = document.querySelector('[data-id="' + memo.id + '"].' + memo.cls + (memo.i !== undefined ? '[data-i="' + memo.i + '"]' : ''));
     if (n) n.focus();
   }
 }
@@ -274,7 +305,10 @@ async function enregistrer(patch, annuler){
   catch(err){ annuler(); statutTemp = "Enregistrement impossible : réessaie dans un instant."; afficher(); }
 }
 
-function modifier(id, champ, brut){
+const etatLigne = l => ({prix:l.prix, statut:l.statut, mode:l.mode, parts:l.parts.slice(), montants:l.montants.slice()});
+const restaurer = (l, a) => { l.prix = a.prix; l.statut = a.statut; l.mode = a.mode; l.parts = a.parts; l.montants = a.montants; };
+
+function modifier(id, champ, brut, idx){
   if (!(mode === "partage" && editeur)) return;
   statutTemp = "";
   if (id === "_taux"){
@@ -285,25 +319,50 @@ function modifier(id, champ, brut){
     return;
   }
   const l = LIGNES.find(x => x.id === id); if (!l) return;
-  const avant = {prix:l.prix, statut:l.statut};
+  const avant = etatLigne(l);
   if (champ === "prix"){
     const m = lireMontant(brut);
     if (m.invalide){ statutTemp = "Montant invalide : entre un nombre (ex. 24,95)."; afficher(); return; }
     if (m.vide){ l.prix = null; l.statut = "a_chiffrer"; }
     else { l.prix = m.n; if (l.statut === "a_chiffrer") l.statut = "estime"; }
-  } else if (STATUTS[brut]){ l.statut = brut; }
-  else return;
+  } else if (champ === "statut"){
+    if (!STATUTS[brut]) return;
+    l.statut = brut;
+  } else if (champ === "mode"){
+    if (brut === "montants" && l.mode !== "montants"){
+      // on part des montants actuellement calculés, pour les ajuster ensuite
+      l.montants = l.e.map(v => v === null ? null : Math.round(v * 100) / 100);
+      l.mode = "montants";
+      if (l.montants.some(v => v !== null) && l.statut === "a_chiffrer") l.statut = "estime";
+    } else if (brut === "parts" && l.mode !== "parts"){
+      l.mode = "parts";
+      if (l.prix === null) l.statut = "a_chiffrer";
+    } else return;
+  } else if (champ === "part"){
+    const m = lireMontant(brut);
+    if (m.invalide){ statutTemp = "Parts invalides : entre un nombre (ex. 2 ou 1,5)."; afficher(); return; }
+    l.parts[idx] = m.vide ? 0 : m.n;
+  } else if (champ === "montant"){
+    const m = lireMontant(brut);
+    if (m.invalide){ statutTemp = "Montant invalide : entre un nombre (ex. 24,95)."; afficher(); return; }
+    l.montants[idx] = m.vide ? null : m.n;
+    if (l.montants.every(v => v === null)) l.statut = "a_chiffrer";
+    else if (l.statut === "a_chiffrer") l.statut = "estime";
+  } else return;
   setTimeout(afficher, 0);
-  enregistrer({[id]: {prix:l.prix, statut:l.statut}}, () => { l.prix = avant.prix; l.statut = avant.statut; });
+  // une ligne alimentée par la page Logements : seules les parts sont enregistrées
+  enregistrer({[id]: l.auto ? {parts:l.parts.slice()} : etatLigne(l)}, () => restaurer(l, avant));
 }
 
 document.addEventListener("change", e => {
   const t = e.target;
-  if (!t.matches || !t.matches(".in-prix, .in-statut, .in-taux")) return;
-  modifier(t.dataset.id, t.classList.contains("in-statut") ? "statut" : "prix", t.value);
+  if (!t.matches || !t.matches(SEL_SAISIE)) return;
+  const c = t.classList;
+  const champ = c.contains("in-statut") ? "statut" : c.contains("in-mode") ? "mode" : c.contains("in-part") ? "part" : c.contains("in-montant") ? "montant" : "prix";
+  modifier(t.dataset.id, champ, t.value, Number(t.dataset.i));
 });
 document.addEventListener("keydown", e => {
-  if (e.key === "Enter" && e.target.matches && e.target.matches(".in-prix, .in-taux")) e.target.blur();
+  if (e.key === "Enter" && e.target.matches && e.target.matches(".in-prix, .in-taux, .in-part, .in-montant")) e.target.blur();
 });
 document.addEventListener("focusout", () => {
   setTimeout(() => { if (renduEnAttente && !enSaisie()){ renduEnAttente = false; afficher(); } }, 0);
@@ -314,7 +373,7 @@ afficher();
 // Connexion à la base en ligne (si elle n'est pas joignable, la page affiche les valeurs d'origine)
 (async function demarrer(){
   try{
-    P = await import("./partage.js?v=16");
+    P = await import("./partage.js?v=17");
     if (!(await P.connecter())) throw new Error("connexion impossible");
     editeur = P.estEditeur();
     P.installerBarre(ed => { editeur = ed; afficher(); });
